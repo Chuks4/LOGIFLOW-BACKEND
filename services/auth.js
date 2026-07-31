@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const refreshTokenRepo = require("../repositories/refreshToken");
 const db = require("../models");
+const roleRepository = require("../repositories/role");
 
 const {
   isEmailValid,
@@ -13,8 +14,16 @@ const {
   setRefreshCookie,
   hashToken,
   rotateRefreshToken,
+  isUserAtLeastEighteen,
 } = require("../utils/util");
 
+/**
+ * Login user
+ * @param {String} email
+ * @param {String} password
+ * @param {String} options
+ * @returns {String} accessToken
+ */
 const login = async (email, password, options = {}) => {
   if (!isEmailValid(email)) {
     const error = new Error("Invalid Email Address");
@@ -37,7 +46,11 @@ const login = async (email, password, options = {}) => {
     throw error;
   }
 
-  const payload = { userId: user.id, email: user.email };
+  const payload = {
+    userId: user.id,
+    email: user.email,
+    emailVerified: user.emailVerified,
+  };
   const accessToken = signAccessToken(payload);
   const jti = createJti();
   const refreshToken = signRefreshToken(payload, jti);
@@ -46,9 +59,15 @@ const login = async (email, password, options = {}) => {
 
   await createRefreshToken(user, refreshToken, jti, ip, userAgent);
   setRefreshCookie(res, refreshToken);
+  await user.update({ lastLogin: new Date() });
   return { accessToken };
 };
 
+/**
+ * Creates new access token using refresh token
+ * @param {Object} options
+ * @returns {String} accessToken
+ */
 const refreshToken = async (options = {}) => {
   const { req, res } = options;
   const token = req.cookies?.refresh_token || "";
@@ -101,6 +120,11 @@ const refreshToken = async (options = {}) => {
   return { accessToken };
 };
 
+/**
+ * Logout user
+ * @param {Object} options
+ * @returns {String} message
+ */
 const logout = async (options = {}) => {
   const { req, res } = options;
   const token = req.cookies?.refresh_token || "";
@@ -121,8 +145,77 @@ const logout = async (options = {}) => {
   return { message: "Logged out successfully" };
 };
 
+/**
+ * @param {Object} data
+ * @param {String} data.email
+ * @param {String} data.password
+ * @param {String} data.firstName
+ * @param {String} data.lastName
+ * @param {String} data.roleId
+ * @param {String} data.gender
+ * @param {String} data.dob
+ * @param {String} data.phoneNumber
+ * @returns {Promise<Object>} New User Object
+ */
+const register = async (data) => {
+  const {
+    email,
+    password,
+    firstName,
+    lastName,
+    roleId,
+    gender,
+    dob,
+    phoneNumber,
+  } = data;
+
+  if (email && !isEmailValid(email)) {
+    const error = new Error("Invalid Email Address");
+    error.status = 401;
+    throw error;
+  }
+  const hashedPasswod = await bcrypt.hash(password, 10);
+
+  const emailExists = await userRepository.findByEmail(email);
+  if (emailExists) {
+    const error = new Error("Email already exists");
+    error.status = 409;
+    throw error;
+  }
+
+  //   Checks is user is upto eighteen years old
+  if (dob && !isNaN(new Date(dob).getTime()) && !isUserAtLeastEighteen(dob)) {
+    const error = new Error("User must be at least eighteen years old");
+    error.status = 400;
+    throw error;
+  }
+
+  const role = roleId
+    ? await roleRepository.findById(roleId)
+    : await roleRepository.findOne({ where: { name: "customer" } });
+
+  if (!role) {
+    const error = new Error("Role not found");
+    error.status = 404;
+    throw error;
+  }
+
+  const user = await userRepository.create({
+    email,
+    password: hashedPasswod,
+    firstName,
+    lastName,
+    roleId: role.id,
+    gender,
+    dob,
+    phoneNumber,
+  });
+  return user;
+};
+
 module.exports = {
   login,
   refreshToken,
   logout,
+  register,
 };

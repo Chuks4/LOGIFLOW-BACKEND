@@ -79,6 +79,24 @@ const isEmailValid = (email) => {
   return /\S+@\S+\.\S+/.test(email);
 };
 
+const isUserAtLeastEighteen = (dob) => {
+  const birthDate = new Date(dob);
+  const today = new Date();
+
+  let age = today.getFullYear() - birthDate.getFullYear();
+
+  const hasHadBirthdayThisYear =
+    today.getMonth() > birthDate.getMonth() ||
+    (today.getMonth() === birthDate.getMonth() &&
+      today.getDate() >= birthDate.getDate());
+
+  if (!hasHadBirthdayThisYear) {
+    age--;
+  }
+
+  return age >= 18;
+};
+
 module.exports = {
   signAccessToken,
   signRefreshToken,
@@ -88,4 +106,5 @@ module.exports = {
   setRefreshCookie,
   rotateRefreshToken,
   isEmailValid,
+  isUserAtLeastEighteen,
 };

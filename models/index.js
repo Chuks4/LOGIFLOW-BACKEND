@@ -8,8 +8,10 @@ db.Sequelize = Sequelize;
 //Models
 db.users = require("./users")(DataTypes, sequelize);
 db.refreshToken = require("./refreshToken")(DataTypes, sequelize);
+db.roles = require("./roles")(DataTypes, sequelize);
 
 // RelationShips
+// User and RefreshToken
 db.users.hasMany(db.refreshToken, {
   foreignKey: "userId",
   as: "refreshToken",
@@ -17,6 +19,16 @@ db.users.hasMany(db.refreshToken, {
 db.refreshToken.belongsTo(db.users, {
   foreignKey: "userId",
   as: "user",
+});
+
+// User and Role
+db.roles.hasMany(db.users, {
+  foreignKey: "roleId",
+  as: "users",
+});
+db.users.belongsTo(db.roles, {
+  as: "role",
+  foreignKey: "roleId",
 });
 
 module.exports = db;
