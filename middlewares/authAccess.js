@@ -11,14 +11,26 @@ const authAccess = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, privateKey);
     req.user = decoded;
+
+    if (!req.user.emailVerified && !req.path.includes("/verify-email")) {
+      return res.status(401).json({
+        message: "Please verify your email to access this resource",
+      });
+    }
     next();
   } catch (error) {
     if (error === "TokenExpiredError") {
-      throw new Error("Token expired");
+      return res.status(401).json({
+        message: "Token expired",
+      });
     } else if (error === "JsonWebTokenError") {
-      throw new Error("Invalid token");
+      return res.status(401).json({
+        message: "Invalid token",
+      });
     } else {
-      throw error;
+      return res.status(401).json({
+        message: error,
+      });
     }
   }
 };
