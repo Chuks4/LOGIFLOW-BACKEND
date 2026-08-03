@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const refreshTokenRepo = require("../repositories/refreshToken");
 const db = require("../models");
 const roleRepository = require("../repositories/role");
+const emailService = require("../services/email");
 
 const {
   isEmailValid,
@@ -16,6 +17,7 @@ const {
   rotateRefreshToken,
   isUserAtLeastEighteen,
 } = require("../utils/util");
+const welcomeMail = require("../utils/emailTemplates/welcomeMail");
 
 /**
  * Login user
@@ -209,6 +211,16 @@ const register = async (data) => {
     gender,
     dob,
     phoneNumber,
+  });
+
+  const mailOption = {
+    to: user.email,
+    subject: "Welcome to LogiFlow",
+    html: welcomeMail(`${user.firstName}`),
+  };
+
+  sendEmail(mailOption).catch((err) => {
+    console.error("Error sending welcome email:", err);
   });
   return user;
 };

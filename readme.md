@@ -327,7 +327,7 @@ Completed
 
 ## Validation
 
-- Zod
+- express-validator
 
 ## Documentation
 
@@ -354,10 +354,33 @@ Completed
 - Jest
 - Supertest
 
-## DevOps
+<!-- ## DevOps
 
 - Docker
-- Docker Compose
+- Docker Compose -->
+
+## Email Service
+
+- Nodemailer
+
+---
+
+
+---
+
+# Folder Structure
+
+```
+
+├── config
+├── controllers
+├── middlewares
+├── models
+├── repositories
+├── services
+├── utils
+├── validators
+├── routes
 
 ---
 
@@ -393,33 +416,17 @@ PostgreSQL
 
 Supporting Services
 
-- Redis
-- BullMQ
-- Cloudinary
-- Socket.io
-- Paystack
+<!-- - Redis -->
+<!-- - BullMQ -->
+<!-- - Cloudinary -->
+<!-- - Socket.io -->
+<!-- - Paystack -->
+- Nodemailer
 
 ---
 
-# Folder Structure
 
-```
 
-├── config
-├── controllers
-├── middleware
-├── models
-├── repositories
-├── services
-├── validators
-├── routes
-├── jobs
-├── sockets
-├── events
-├── utils
-├── docs
-├── tests
-└── app.js
 ```
 
 ---
