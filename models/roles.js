@@ -1,5 +1,5 @@
 module.exports = (DataTypes, sequelize) => {
-  const role = sequelize.define("roles", {
+  const Role = sequelize.define("roles", {
     id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -15,4 +15,6 @@ module.exports = (DataTypes, sequelize) => {
       allowNull: false,
     },
   });
+
+  return Role;
 };

@@ -1,5 +1,5 @@
 const db = require("../models");
-const baseRepository = require("./baseRepository");
+const baseRepository = require("./baseRespository");
 
 const base = baseRepository(db.users);
 const findByEmail = async (email) => {

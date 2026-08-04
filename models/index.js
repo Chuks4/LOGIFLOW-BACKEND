@@ -1,15 +1,15 @@
 const { Sequelize, DataTypes } = require("sequelize");
 const NODE_ENV = process.env.NODE_ENV || "development";
-const dbConfig = require("../config/db.config")[NODE_ENV];
+const dbConfig = require("../config/db.config");
 const { logger } = require("../logger/logger");
 
 const sequelize = new Sequelize(
-  dbConfig.database,
-  dbConfig.username,
-  dbConfig.password,
+  dbConfig[NODE_ENV].database,
+  dbConfig[NODE_ENV].username,
+  dbConfig[NODE_ENV].password,
   {
-    host: dbConfig.host,
-    dialect: dbConfig.dialect || "postgres",
+    host: dbConfig[NODE_ENV].host,
+    dialect: dbConfig[NODE_ENV].dialect || "postgres",
     logging: false,
     pool: {
       max: dbConfig.pool.max,
@@ -23,8 +23,10 @@ const sequelize = new Sequelize(
 // Confirms the database connection and logs the result
 try {
   sequelize.authenticate();
-  logger.info("Database was successfully connected: NODE_ENV = ", NODE_ENV);
-  if (typeof dbConfig.password !== "string") {
+  logger.info("Database was successfully connected ", {
+    NODE_ENV,
+  });
+  if (typeof dbConfig[NODE_ENV].password !== "string") {
     throw new Error("DB_PASSWORD must be a string!");
   }
 } catch (error) {
@@ -65,10 +67,10 @@ db.users.belongsTo(db.roles, {
 sequelize
   .sync({ force: false })
   .then(() => {
-    logger.info("Database & tables created!");
+    logger.info("Database synced successfully");
   })
   .catch((error) => {
-    logger.error("Error creating database tables:", { error: error.message });
+    logger.error("Error syncing database tables:", { error: error.message });
   });
 
 module.exports = db;

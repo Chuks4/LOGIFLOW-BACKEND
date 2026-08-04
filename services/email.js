@@ -34,8 +34,8 @@ class EmailServices {
       const result = await this.transporter.sendMail(data);
       logger.info("Email sent successfully", { messageId: result.messageId });
       return { status: true, result };
-    } catch (error) {
-      logger.error("Failed to send email", { error: error.message });
+    } catch (err) {
+      logger.error("Failed to send email", { error: err.message });
       const error = new Error("Email could not be sent");
       error.statusCode = 500;
       throw error;

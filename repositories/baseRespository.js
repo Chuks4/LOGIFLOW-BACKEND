@@ -34,4 +34,4 @@ class BaseRepository {
 
 const baseRespository = (model) => new BaseRepository(model);
 
-module.exports = baseRepository;
+module.exports = baseRespository

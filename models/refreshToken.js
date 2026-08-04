@@ -23,7 +23,7 @@ module.exports = (DataTypes, sequelize) => {
           fields: ["tokenHash"],
         },
         {
-          fields: ["user"],
+          fields: ["userId"],
         },
         {
           fields: ["expiresAt"],
@@ -31,4 +31,6 @@ module.exports = (DataTypes, sequelize) => {
       ],
     },
   );
+
+  return refreshToken;
 };
