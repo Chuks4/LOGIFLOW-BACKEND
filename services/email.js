@@ -1,4 +1,5 @@
 const nodemailer = require("nodemailer");
+const {logger} = require("../logger/logger");
 
 class EmailServices {
   constructor() {
@@ -31,9 +32,10 @@ class EmailServices {
         html: data.html,
       };
       const result = await this.transporter.sendMail(data);
-      console.log("Email sent successfully", result.messageId);
+      logger.info("Email sent successfully", { messageId: result.messageId });
       return { status: true, result };
     } catch (error) {
+      logger.error("Failed to send email", { error: error.message });
       const error = new Error("Email could not be sent");
       error.statusCode = 500;
       throw error;

@@ -1,6 +1,7 @@
 const { Sequelize, DataTypes } = require("sequelize");
 const NODE_ENV = process.env.NODE_ENV || "development";
 const dbConfig = require("../config/db.config")[NODE_ENV];
+const { logger } = require("../logger/logger");
 
 const sequelize = new Sequelize(
   dbConfig.database,
@@ -22,12 +23,12 @@ const sequelize = new Sequelize(
 // Confirms the database connection and logs the result
 try {
   sequelize.authenticate();
-  console.log("Database was successfully connected: NODE_ENV = ", NODE_ENV);
+  logger.info("Database was successfully connected: NODE_ENV = ", NODE_ENV);
   if (typeof dbConfig.password !== "string") {
     throw new Error("DB_PASSWORD must be a string!");
   }
 } catch (error) {
-  console.log("Error connecting to database ", error);
+  logger.error("Error connecting to database ", { error: error.message });
 }
 
 const db = {};
@@ -64,10 +65,10 @@ db.users.belongsTo(db.roles, {
 sequelize
   .sync({ force: false })
   .then(() => {
-    console.log("Database & tables created!");
+    logger.info("Database & tables created!");
   })
   .catch((error) => {
-    console.error("Error creating database tables:", error);
+    logger.error("Error creating database tables:", { error: error.message });
   });
 
 module.exports = db;
