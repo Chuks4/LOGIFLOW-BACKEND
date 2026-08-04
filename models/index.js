@@ -6,9 +6,10 @@ db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
 //Models
+db.roles = require("./roles")(DataTypes, sequelize);
 db.users = require("./users")(DataTypes, sequelize);
 db.refreshToken = require("./refreshToken")(DataTypes, sequelize);
-db.roles = require("./roles")(DataTypes, sequelize);
+
 
 // RelationShips
 // User and RefreshToken

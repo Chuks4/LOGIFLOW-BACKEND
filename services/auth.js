@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const refreshTokenRepo = require("../repositories/refreshToken");
 const db = require("../models");
 const roleRepository = require("../repositories/role");
-const emailService = require("../services/email");
+const { enqueWelcomeEmail } = require("../queues/email");
 
 const {
   isEmailValid,
@@ -219,9 +219,8 @@ const register = async (data) => {
     html: welcomeMail(`${user.firstName}`),
   };
 
-  sendEmail(mailOption).catch((err) => {
-    console.error("Error sending welcome email:", err);
-  });
+  // Enqueue the welcome email to be sent asynchronously
+  await enqueWelcomeEmail(mailOption);
   return user;
 };
 
