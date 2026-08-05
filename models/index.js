@@ -41,6 +41,13 @@ db.Sequelize = Sequelize;
 db.roles = require("./roles")(DataTypes, sequelize);
 db.users = require("./users")(DataTypes, sequelize);
 db.refreshToken = require("./refreshToken")(DataTypes, sequelize);
+db.shipments = require("./shipments")(DataTypes, sequelize);
+db.shipment_items = require("./shipment_items")(DataTypes, sequelize);
+db.shipmentStatusHistory = require("./shipment_status_history")(
+  DataTypes,
+  sequelize,
+);
+db.vehicles = require("./vehicles")(DataTypes, sequelize);
 
 // RelationShips
 // User and RefreshToken
@@ -61,6 +68,62 @@ db.roles.hasMany(db.users, {
 db.users.belongsTo(db.roles, {
   as: "role",
   foreignKey: "roleId",
+});
+
+// User and Shipments
+db.users.hasMany(db.shipments, {
+  foreignKey: "customerId",
+  as: "customerShipments",
+});
+db.users.hasMany(db.shipments, {
+  foreignKey: "driverId",
+  as: "driverShipments",
+});
+db.users.hasMany(db.shipments, {
+  foreignKey: "dispatcherId",
+  as: "dispatcherShipments",
+});
+db.shipments.belongsTo(db.users, {
+  as: "customer",
+  foreignKey: "customerId",
+});
+db.shipments.belongsTo(db.users, {
+  as: "driver",
+  foreignKey: "driverId",
+});
+db.shipments.belongsTo(db.users, {
+  as: "dispatcher",
+  foreignKey: "dispatcherId",
+});
+
+// Shipment and ShipmentItems
+db.shipments.hasMany(db.shipment_items, {
+  foreignKey: "shipmentId",
+  as: "shipmentItems",
+});
+db.shipment_items.belongsTo(db.shipments, {
+  foreignKey: "shipmentId",
+  as: "shipment",
+});
+
+// Shipment and ShipmentStatusHistory
+db.shipments.hasMany(db.shipmentStatusHistory, {
+  foreignKey: "shipmentId",
+  as: "shipmentStatusHistory",
+});
+db.shipmentStatusHistory.belongsTo(db.shipments, {
+  foreignKey: "shipmentId",
+  as: "shipment",
+});
+
+// User and Vehicle
+db.users.hasOne(db.vehicles, {
+  foreignKey: "driverId",
+  as: "vehicle",
+});
+db.vehicles.belongsTo(db.users, {
+  foreignKey: "driverId",
+  as: "driver",
 });
 
 // Sync the models with the database

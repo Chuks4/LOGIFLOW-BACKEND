@@ -363,6 +363,10 @@ Completed
 
 - Nodemailer
 
+## Logging Messages
+
+- Winston
+
 ---
 
 
@@ -374,8 +378,10 @@ Completed
 
 ├── config
 ├── controllers
+├── logger
 ├── middlewares
 ├── models
+├── queues
 ├── repositories
 ├── services
 ├── utils
@@ -416,8 +422,8 @@ PostgreSQL
 
 Supporting Services
 
-<!-- - Redis -->
-<!-- - BullMQ -->
+- Redis
+- BullMQ
 <!-- - Cloudinary -->
 <!-- - Socket.io -->
 <!-- - Paystack -->
@@ -445,21 +451,20 @@ Shipment
 - shipment_items
 - shipment_status_history
 
-Drivers
+Vehicles
 
-- drivers
 - vehicles
 - driver_locations
 
-Dispatch
+<!-- Dispatch
 
 - assignments
-- routes
+- routes -->
 
-Warehouse
+<!-- Warehouse
 
 - warehouses
-- warehouse_inventory
+- warehouse_inventory -->
 
 Payment
 
