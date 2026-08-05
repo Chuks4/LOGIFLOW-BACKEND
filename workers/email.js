@@ -11,12 +11,24 @@ const emailWorker = new Worker(
         await emailService.sendEmail(job.data);
         logger.info("Welcome email sent", { recipient: job.data.to });
         break;
+
+      case "password-reset-email":
+        await emailService.sendEmail(job.data);
+        logger.info("Password reset email sent", { recipient: job.data.to });
+        break;
+
+      case "email-verification-email":
+        await emailService.sendEmail(job.data);
+        logger.info("Email verification email sent", {
+          recipient: job.data.to,
+        });
+        break;
     }
   },
   {
     connection,
     concurrency: 5,
-  }
+  },
 );
 
 // Fired when a job completes successfully

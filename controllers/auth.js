@@ -54,9 +54,54 @@ const register = async (req, res) => {
   }
 };
 
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const result = await authService.forgotPassword(email);
+    res.status(200).json({ status: true, message: result.message });
+  } catch (error) {
+    if (error.status) {
+      res.status(error.status).json({ status: false, message: error.message });
+    } else {
+      res.status(500).json({ status: false, message: "Internal server error" });
+    }
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    const result = await authService.resetPassword({ token, newPassword });
+    res.status(200).json({ status: true, message: result.message });
+  } catch (error) {
+    if (error.status) {
+      res.status(error.status).json({ status: false, message: error.message });
+    } else {
+      res.status(500).json({ status: false, message: "Internal server error" });
+    }
+  }
+};
+
+const verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.body;
+    const result = await authService.verifyEmail(token);
+    res.status(200).json({ status: true, message: result.message });
+  } catch (error) {
+    if (error.status) {
+      res.status(error.status).json({ status: false, message: error.message });
+    } else {
+      res.status(500).json({ status: false, message: "Internal server error" });
+    }
+  }
+};
+
 module.exports = {
   login,
   refreshToken,
   logout,
   register,
+  forgotPassword,
+  resetPassword,
+  verifyEmail
 };

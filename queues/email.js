@@ -12,4 +12,28 @@ const enqueWelcomeEmail = async (emailData) => {
   });
 };
 
-module.exports = { enqueWelcomeEmail };
+const enquePasswordResetEmail = async (emailData) => {
+  await emailQueue.add("password-reset-email", emailData, {
+    attempts: 3,
+    backoff: {
+      type: "exponential",
+      delay: 5000,
+    },
+  });
+};
+
+const enqueEmailVerificationEmail = async (emailData) => {
+  await emailQueue.add("email-verification-email", emailData, {
+    attempts: 3,
+    backoff: {
+      type: "exponential",
+      delay: 5000,
+    },
+  });
+};
+
+module.exports = {
+  enqueWelcomeEmail,
+  enquePasswordResetEmail,
+  enqueEmailVerificationEmail,
+};

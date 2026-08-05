@@ -48,6 +48,7 @@ db.shipmentStatusHistory = require("./shipment_status_history")(
   sequelize,
 );
 db.vehicles = require("./vehicles")(DataTypes, sequelize);
+db.tokens = require("./tokens")(DataTypes, sequelize);
 
 // RelationShips
 // User and RefreshToken
@@ -124,6 +125,16 @@ db.users.hasOne(db.vehicles, {
 db.vehicles.belongsTo(db.users, {
   foreignKey: "driverId",
   as: "driver",
+});
+
+// User and Tokens
+db.users.hasMany(db.tokens, {
+  foreignKey: "userId",
+  as: "tokens",
+});
+db.tokens.belongsTo(db.users, {
+  foreignKey: "userId",
+  as: "user",
 });
 
 // Sync the models with the database

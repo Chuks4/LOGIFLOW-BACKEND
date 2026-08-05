@@ -36,4 +36,28 @@ const validateRegister = [
   body("address").trim().notEmpty().withMessage("Address is required"),
 ];
 
-module.exports = { validateLogin, validateRegister };
+const validateEmailVerification = [
+  body("token").trim().notEmpty().withMessage("Verification token is required"),
+];
+
+const validateForgotPassword = [
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required")
+    .isEmail()
+    .withMessage("Email is not valid"),
+];
+
+const validateResetPassword = [
+  body("token").trim().notEmpty().withMessage("Reset token is required"),
+  body("newPassword").trim().notEmpty().withMessage("New password is required"),
+];
+
+module.exports = {
+  validateLogin,
+  validateRegister,
+  validateEmailVerification,
+  validateForgotPassword,
+  validateResetPassword,
+};

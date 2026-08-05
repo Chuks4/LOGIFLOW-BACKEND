@@ -4,7 +4,12 @@ const jwt = require("jsonwebtoken");
 const refreshTokenRepo = require("../repositories/refreshToken");
 const db = require("../models");
 const roleRepository = require("../repositories/role");
-const { enqueWelcomeEmail } = require("../queues/email");
+const {
+  enqueWelcomeEmail,
+  enquePasswordResetEmail,
+  enqueEmailVerificationEmail,
+} = require("../queues/email");
+const tokensRepository = require("../repositories/tokens");
 
 const {
   isEmailValid,
@@ -18,6 +23,8 @@ const {
   isUserAtLeastEighteen,
 } = require("../utils/util");
 const welcomeMail = require("../utils/emailTemplates/welcomeMail");
+const passwordResetMail = require("../utils/emailTemplates/passwordResetMail");
+const emailVerificationMail = require("../utils/emailTemplates/emailVerificationMail");
 
 /**
  * Login user
@@ -213,15 +220,148 @@ const register = async (data) => {
     phoneNumber,
   });
 
+  const token = createJti();
+  const hashedToken = hashToken(token);
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 days from now
+
+  await tokensRepository.create({
+    userId: user.id,
+    tokenHash: hashedToken,
+    purpose: "email_verification",
+    expiresAt,
+  });
+
   const mailOption = {
     to: user.email,
+    subject: "Email Verification",
+    html: emailVerificationMail(token),
+  };
+
+  // Enqueue the verification emails to be sent asynchronously
+  await enqueEmailVerificationEmail(mailOption);
+  return user;
+};
+
+/**
+ * Forgot password updates the user's password and sends a reset email
+ * @param {String} email
+ * @returns {Promise<Object>} { message: String }
+ */
+const forgotPassword = async (email) => {
+  if (!isEmailValid(email)) {
+    const error = new Error("Invalid Email Address");
+    error.status = 400;
+    throw error;
+  }
+
+  const user = await userRepository.findByEmail(email);
+  if (!user) {
+    const error = new Error(
+      "If an account with that email exists, a password reset link has been sent.",
+    );
+    error.status = 400;
+    throw error;
+  }
+
+  const token = createJti();
+  const hashedToken = hashToken(token);
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes from now
+
+  await tokensRepository.create({
+    userId: user.id,
+    tokenHash: hashedToken,
+    purpose: "password_reset",
+    expiresAt,
+  });
+  const mailOption = {
+    to: user.email,
+    subject: "Password Reset",
+    html: passwordResetMail(token),
+  };
+
+  // Enqueue the password reset email to be sent asynchronously
+  await enquePasswordResetEmail(mailOption);
+  return {
+    message:
+      "If an account with that email exists, a password reset link has been sent.",
+  };
+};
+
+/**
+ * Resets the user's password using a valid reset token
+ * @param {String} token
+ * @param {String} newPassword
+ */
+const resetPassword = async (data) => {
+  const { token, newPassword } = data;
+  const hashedToken = hashToken(token);
+  const existingToken = await tokensRepository.findOne({
+    tokenHash: hashedToken,
+    purpose: "password_reset",
+  });
+
+  if (!existingToken) {
+    const error = new Error("Invalid or expired reset token");
+    error.status = 400;
+    throw error;
+  }
+
+  if (existingToken.expiresAt < new Date()) {
+    const error = new Error("Invalid or expired reset token");
+    error.status = 400;
+    throw error;
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  await userRepository.update(
+    { id: existingToken.userId },
+    { password: hashedPassword },
+  );
+
+  await existingToken.destroy();
+  return { message: "Password reset successful" };
+};
+
+/**
+ * Verifies the user's email using a valid verification token
+ * @param {String} token
+ * @returns {Promise<Object>} { message: String }
+ */
+const verifyEmail = async (token) => {
+  const hashedToken = hashToken(token);
+  const existingToken = await tokensRepository.findOne({
+    tokenHash: hashedToken,
+    purpose: "email_verification",
+    include: { model: db.users, as: "user", attributes: ["firstName"] },
+  });
+  if (!existingToken) {
+    const error = new Error("Invalid or expired verification token");
+    error.status = 400;
+    throw error;
+  }
+
+  if (existingToken.expiresAt < new Date()) {
+    const error = new Error("Invalid or expired verification token");
+    error.status = 400;
+    throw error;
+  }
+
+  await userRepository.update(
+    { id: existingToken.userId },
+    { emailVerified: true },
+  );
+  await existingToken.destroy();
+
+  const mailOption = {
+    to: existingToken.user.email,
     subject: "Welcome to LogiFlow",
-    html: welcomeMail(`${user.firstName}`),
+    html: welcomeMail(existingToken.user.firstName),
   };
 
   // Enqueue the welcome email to be sent asynchronously
   await enqueWelcomeEmail(mailOption);
-  return user;
+
+  return { message: "Email verified successfully" };
 };
 
 module.exports = {
@@ -229,4 +369,7 @@ module.exports = {
   refreshToken,
   logout,
   register,
+  forgotPassword,
+  resetPassword,
+  verifyEmail,
 };
