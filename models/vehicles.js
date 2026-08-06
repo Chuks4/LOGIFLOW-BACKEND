@@ -2,7 +2,7 @@ module.exports = (DataTypes, sequelize) => {
   const Vehicle = sequelize.define("vehicle", {
     id: {
       type: DataTypes.UUID,
-      defaultValue: UUID.UUIDV4,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
       allowNull: false,
     },
@@ -54,9 +54,6 @@ module.exports = (DataTypes, sequelize) => {
       defaultValue: DataTypes.NOW,
     },
   });
-  AVAILABLE;
-  ON_TRIP;
-  UNDER_MAINTENANCE;
-  OUT_OF_SERVICE;
+  
   return Vehicle;
 };
