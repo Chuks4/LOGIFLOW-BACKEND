@@ -71,6 +71,10 @@ module.exports = (DataTypes, sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      url: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       lastLogin: {
         type: DataTypes.DATE,
         allowNull: true,

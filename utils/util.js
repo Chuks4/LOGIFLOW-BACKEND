@@ -3,7 +3,7 @@ const crypto = require("crypto");
 const privateAccessToken = process.env.JWT_SECRET_KEY;
 const privateRefreshToken = process.env.JWT_REFRESH_SECRET_KEY;
 const REFRESH_TTL_SEC = process.env.REFRESH_TTL_SEC;
-const db = require("../models");
+const db = require("../models")
 
 const signAccessToken = (payload) => {
   jwt.sign(payload, privateAccessToken, { expiresIn: "15m" });
@@ -97,6 +97,19 @@ const isUserAtLeastEighteen = (dob) => {
   return age >= 18;
 };
 
+const deleteFile = (path) => {
+  try {
+    if (fs.existsSync(path)) {
+      fs.unlinkSync(path);
+      console.log("File deleted successfully");
+    } else {
+      console.log("File does not exist");
+    }
+  } catch (error) {
+    console.log("Error deleting file: ", error);
+  }
+};
+
 module.exports = {
   signAccessToken,
   signRefreshToken,
@@ -107,4 +120,5 @@ module.exports = {
   rotateRefreshToken,
   isEmailValid,
   isUserAtLeastEighteen,
+  deleteFile
 };
