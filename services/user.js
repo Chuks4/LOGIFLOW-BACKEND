@@ -5,7 +5,7 @@ const { deleteFile } = require("utils/util");
 
 /**
  * Get customers
- * @param {Object} query 
+ * @param {Object} query
  * @returns {Promise<Array<Object>>} - Paginated result
  */
 const getCustomers = async (query) => {
@@ -136,4 +136,11 @@ const updateUserStatus = async (id, status) => {
   });
 
   return userRepository.findById(id);
+};
+
+module.exports = {
+  getCustomers,
+  getUserById,
+  updateUser,
+  updateUserStatus,
 };

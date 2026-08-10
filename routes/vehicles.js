@@ -1,12 +1,13 @@
 const vehicleController = require("../controllers/vehicle");
 const router = require("express").Router();
 const { validateCreateVehicle } = require("../validators/vehicles");
+const authAccess = require("../middlewares/authAccess");
 
-router.post("/", validateCreateVehicle, vehicleController.create);
-router.get("/", vehicleController.getAll);
-router.get("/:id", vehicleController.getById);
-router.put("/:id", vehicleController.update);
-router.put("/:id/driver", vehicleController.assignDriver);
-router.delete("/:id", vehicleController.deleteById);
+router.post("/", authAccess, validateCreateVehicle, vehicleController.create);
+router.get("/", authAccess, vehicleController.getAll);
+router.get("/:id", authAccess, vehicleController.getById);
+router.put("/:id", authAccess, vehicleController.update);
+router.put("/:id/driver", authAccess, vehicleController.assignDriver);
+router.delete("/:id", authAccess, vehicleController.deleteById);
 
 module.exports = router;
