@@ -28,6 +28,7 @@ module.exports = (DataTypes, sequelize) => {
         "Out of Service",
       ),
       allowNull: false,
+      defaultValue: "Available",
     },
     year: {
       type: DataTypes.INTEGER,
@@ -54,6 +55,6 @@ module.exports = (DataTypes, sequelize) => {
       defaultValue: DataTypes.NOW,
     },
   });
-  
+
   return Vehicle;
 };

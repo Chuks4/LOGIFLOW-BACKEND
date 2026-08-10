@@ -44,7 +44,7 @@ const register = async (req, res) => {
   try {
     const data = req.body;
     const user = await authService.register(data);
-    res.status(200).json({ status: true, user });
+    res.status(200).json({ status: true, data: user });
   } catch (error) {
     if (error.status) {
       res.status(error.status).json({ status: false, message: error.message });
@@ -103,5 +103,5 @@ module.exports = {
   register,
   forgotPassword,
   resetPassword,
-  verifyEmail
+  verifyEmail,
 };

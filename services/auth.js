@@ -201,7 +201,7 @@ const register = async (data) => {
 
   const role = roleId
     ? await roleRepository.findById(roleId)
-    : await roleRepository.findOne({ where: { name: "customer" } });
+    : await roleRepository.findOne({ where: { name: "Customer" } });
 
   if (!role) {
     const error = new Error("Role not found");

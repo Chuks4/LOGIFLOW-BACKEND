@@ -3,6 +3,11 @@ const { Op } = require("sequelize");
 const db = require("../models");
 const { deleteFile } = require("utils/util");
 
+/**
+ * Get customers
+ * @param {Object} query 
+ * @returns {Promise<Array<Object>>} - Paginated result
+ */
 const getCustomers = async (query) => {
   const page = query.page ? parseInt(query.page) : 1;
   const limit = query.limit ? parseInt(query.limit) : 10;
@@ -41,6 +46,11 @@ const getCustomers = async (query) => {
   };
 };
 
+/**
+ * Get user by id
+ * @param {UUID} id - user id
+ * @returns {Promise<Object>} - User object
+ */
 const getUserById = async (id) => {
   if (!id) {
     const error = new Error("User id is required");
@@ -56,6 +66,13 @@ const getUserById = async (id) => {
   return user;
 };
 
+/**
+ * Update user by id
+ * @param {UUID} id - user id
+ * @param {Object} data - user data
+ * @param {file} file - file upload
+ * @returns {Promise<Object>} - Updated user
+ */
 const updateUser = async (id, data, file) => {
   const user = await userRepository.findById(id);
   if (!user) {
@@ -100,6 +117,12 @@ const updateUser = async (id, data, file) => {
   return userRepository.findById(id);
 };
 
+/**
+ * Update user status by id
+ * @param {UUID} id - user id
+ * @param {String} status - user status
+ * @returns {Promise<Object>} - Updated user
+ */
 const updateUserStatus = async (id, status) => {
   const user = await userRepository.findById(id);
   if (!user) {
