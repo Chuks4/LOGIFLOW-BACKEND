@@ -3,7 +3,7 @@ const crypto = require("crypto");
 const privateAccessToken = process.env.JWT_SECRET_KEY;
 const privateRefreshToken = process.env.JWT_REFRESH_SECRET_KEY;
 const REFRESH_TTL_SEC = process.env.REFRESH_TTL_SEC;
-const db = require("../models")
+const db = require("../models");
 
 const signAccessToken = (payload) => {
   jwt.sign(payload, privateAccessToken, { expiresIn: "15m" });
@@ -110,6 +110,16 @@ const deleteFile = (path) => {
   }
 };
 
+const generateTrackingNumber = () => {
+  const characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const random = "";
+  for (let i = 0; i < 8; i++) {
+    const index = crypto.randomInt(0, characters.length);
+    random += characters[index];
+  }
+  return `LOGI-${random}`;
+};
+
 module.exports = {
   signAccessToken,
   signRefreshToken,
@@ -120,5 +130,6 @@ module.exports = {
   rotateRefreshToken,
   isEmailValid,
   isUserAtLeastEighteen,
-  deleteFile
+  deleteFile,
+  generateTrackingNumber
 };

@@ -100,7 +100,7 @@ db.shipments.belongsTo(db.users, {
 // Shipment and ShipmentItems
 db.shipments.hasMany(db.shipment_items, {
   foreignKey: "shipmentId",
-  as: "shipmentItems",
+  as: "items",
 });
 db.shipment_items.belongsTo(db.shipments, {
   foreignKey: "shipmentId",

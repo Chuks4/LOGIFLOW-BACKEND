@@ -21,7 +21,7 @@ module.exports = (DataTypes, sequelize) => {
         "Picked Up",
         "In Transit",
         "Delivered",
-        "Failed",
+        "Returned",
         "Cancelled",
       ),
       defaultValue: "Pending",

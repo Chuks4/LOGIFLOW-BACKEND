@@ -3,8 +3,8 @@ class BaseRepository {
     this.model = model;
   }
 
-  async create(data) {
-    return await this.model.create(data);
+  async create(data, option = {}) {
+    return await this.model.create(data, option);
   }
 
   async findAll(options = {}) {
@@ -34,4 +34,4 @@ class BaseRepository {
 
 const baseRespository = (model) => new BaseRepository(model);
 
-module.exports = baseRespository
+module.exports = baseRespository;

@@ -81,10 +81,22 @@ module.exports = (DataTypes, sequelize) => {
         "Picked Up",
         "In Transit",
         "Delivered",
-        "Failed",
+        "Returned",
         "Cancelled",
       ),
       defaultValue: "Pending",
+      allowNull: false,
+    },
+    note: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    recipientName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    recipientPhone: {
+      type: DataTypes.STRING,
       allowNull: false,
     },
     createdAt: {
