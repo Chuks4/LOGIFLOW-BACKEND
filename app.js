@@ -5,6 +5,7 @@ const authRouter = require("./routes/auth");
 const vehicleRouter = require("./routes/vehicles");
 const userRouter = require("./routes/users");
 const shipmentRouter = require("./routes/shipments");
+const geoapifyRouter = require("./routes/geoapify")
 // const cors = require("cors");
 
 app.use(express.json());
@@ -16,5 +17,6 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/vehicles", vehicleRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/shipments", shipmentRouter);
+app.use("/api/v1/geoapify", geoapifyRouter);
 
 module.exports = app;
