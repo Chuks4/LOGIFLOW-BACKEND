@@ -44,7 +44,13 @@ const register = async (req, res) => {
   try {
     const data = req.body;
     const user = await authService.register(data);
-    res.status(200).json({ status: true, data: user });
+    res
+      .status(201)
+      .json({
+        status: true,
+        message: "User registered successfully",
+        data: user,
+      });
   } catch (error) {
     if (error.status) {
       res.status(error.status).json({ status: false, message: error.message });

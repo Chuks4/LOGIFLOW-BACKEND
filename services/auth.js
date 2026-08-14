@@ -319,7 +319,7 @@ const resetPassword = async (data) => {
   );
 
   await existingToken.destroy();
-  return { message: "Password reset successful" };
+  return { message: "Password reset successfully" };
 };
 
 /**

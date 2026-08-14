@@ -7,12 +7,10 @@ const userRouter = require("./routes/users");
 const shipmentRouter = require("./routes/shipments");
 const geoapifyRouter = require("./routes/geoapify");
 const swaggerUi = require("swagger-ui-express");
-const swaggerJsDoc = require("swagger-jsdoc");
-// const cors = require("cors");
+const swaggerJsdocs = require("swagger-jsdoc");
 
-// Swagger setup
 const swaggerOptions = {
-  swaggerDefinition: {
+  definition: {
     openapi: "3.0.0",
     info: {
       title: "LogiFlow API",
@@ -20,17 +18,27 @@ const swaggerOptions = {
       description:
         "LogiFlow simulates a real-world logistics company where customers can create shipments and track deliveries while dispatchers assign drivers and monitor delivery progress.",
     },
-    // servers: [
-    //   {
-    //     url: "http://localhost:3000",
-    //   },
-    // ],
+    components: {
+      securitySchemes: {
+        BearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
+    },
+    security: [
+      {
+        BearerAuth: [],
+      },
+    ],
   },
-  apis: ["../routes/*.js"], // files containing annotations as above
+
+  apis: ["./routes/*.js"], // files containing annotations as above
 };
 
-const swaggerDocs = swaggerJsDoc(swaggerOptions);
-app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+const swaggerDocs = swaggerJsdocs(swaggerOptions);
+app.use("/api/v1/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 app.use(express.json());
 app.use(cookieParser());

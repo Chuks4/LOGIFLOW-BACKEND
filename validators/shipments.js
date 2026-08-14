@@ -40,7 +40,9 @@ const validateCreateShipment = [
   body("shipmentType")
     .trim()
     .notEmpty()
-    .withMessage("Shipment type is required"),
+    .withMessage("Shipment type is required")
+    .isIn(["standard", "express", "fragile"])
+    .withMessage("Invalid shipment type"),
   body("estimatedCost")
     .trim()
     .toInt()
