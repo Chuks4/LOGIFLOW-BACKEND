@@ -164,7 +164,6 @@ const create = async (data) => {
       deliveryLongitude,
       items = [],
     } = data;
-    const transaction = await db.sequelize.transaction();
 
     const customer = await userRepository.findById(customerId, { transaction });
     if (!customer) {
@@ -261,29 +260,29 @@ const getAll = async (query) => {
   const driverId = query.driverId ? query.driverId : "";
   const dispatcherId = query.dispatcherId ? query.dispatcherId : "";
 
-  const query;
+  const where = {}
 
   if (keyword) {
-    query[Op.or] = [
+    where[Op.or] = [
       { trackingNumber: { [Op.like]: `%${keyword}%` } },
       { recipientName: { [Op.like]: `%${keyword}%` } },
     ];
   }
 
   if (dispatcherId) {
-    query.dispatcherId = dispatcherId;
+    where.dispatcherId = dispatcherId;
   } else if (driverId) {
-    query.driverId = driverId;
+    where.driverId = driverId;
   } else {
-    query.customerId = customerId;
+    where.customerId = customerId;
   }
 
   if (status) {
-    query.status = status;
+    where.status = status;
   }
 
   const { rows, count } = await shipmentRepository.findAndCountAll({
-    where: { ...query },
+    where: { ...where },
     include: { model: db.shipments_items, as: "items", required: true },
     offset,
     limit,

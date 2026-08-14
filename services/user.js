@@ -1,7 +1,7 @@
 const userRepository = require("../repositories/user");
 const { Op } = require("sequelize");
 const db = require("../models");
-const { deleteFile } = require("utils/util");
+const { deleteFile } = require("../utils/util");
 
 /**
  * Get customers
@@ -102,7 +102,7 @@ const updateUser = async (id, data, file) => {
     throw error;
   }
 
-  const user = await userRepository.update(id, {
+  await userRepository.update(id, {
     url: file ? `api/uploads/${file?.path}` : user?.url,
     firstName: firstName || user?.firstName,
     lastName: lastName || user?.lastName,
@@ -131,7 +131,7 @@ const updateUserStatus = async (id, status) => {
     throw error;
   }
 
-  const user = await userRepository.update(id, {
+  await userRepository.update(id, {
     status,
   });
 

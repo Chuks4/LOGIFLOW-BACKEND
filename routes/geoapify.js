@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const authAccess = require("../middleware/authAccess");
+const authAccess = require("../middlewares/authAccess");
 const geoapifyController = require("../controllers/geoapify");
 const { validateCalculateShipmentCost } = require("../validators/geoapify");
 

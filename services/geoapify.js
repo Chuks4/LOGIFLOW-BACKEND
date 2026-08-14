@@ -6,7 +6,7 @@ const {
 } = require("../config/geoapify.config");
 const axios = require("axios");
 
-const calculateEstimatedShipmentCost = async (data) => {
+const calculateEstimatedShipmentCost = async (body) => {
   const {
     shipmentType,
     vehicleType,
@@ -14,7 +14,7 @@ const calculateEstimatedShipmentCost = async (data) => {
     deliveryLng,
     pickupLat,
     pickupLng,
-  } = data;
+  } = body;
 
   if (
     pickupLat < -90 ||

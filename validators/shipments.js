@@ -80,45 +80,54 @@ const validateCreateShipment = [
     .isInt({ min: 1 })
     .withMessage("Item quantity must be a positive integer"),
   body("items.*.weight")
-    .trim()
     .optional()
+    .trim()
     .toInt()
     .isInt({ min: 0 })
     .withMessage("Item weight must be a positive integer"),
   body("items.*.length")
-    .trim()
     .optional()
+    .trim()
     .toInt()
     .isInt({ min: 0 })
     .withMessage("Item length must be a positive integer"),
   body("items.*.width")
-    .trim()
     .optional()
+    .trim()
     .toInt()
     .isInt({ min: 0 })
     .withMessage("Item width must be a positive integer"),
   body("items.*.height")
-    .trim()
     .optional()
+    .trim()
     .toInt()
     .isInt({ min: 0 })
     .withMessage("Item height must be a positive integer"),
   body("items.*.declaredValue")
-    .trim()
     .optional()
+    .trim()
     .toInt()
     .isInt({ min: 0 })
     .withMessage("Item declaredValue must be non-negative integer"),
   body("items.*.category")
-    .trim()
     .optional()
-    .withMessage("Item category must be a positive integer"),
+    .isString()
+    .trim()
+    .withMessage("Item category must be a string"),
   body("items.*.isFragile")
     .isBoolean()
     .withMessage("Item isFragile must be a boolean")
     .toBoolean(),
-  body("items.*.color").trim().optional(),
-  body("specialInstructions").trim().optional(),
+  body("items.*.color")
+    .optional()
+    .isString()
+    .trim()
+    .withMessage("Item color must be a string"),
+  body("specialInstructions")
+    .optional()
+    .isString()
+    .trim()
+    .withMessage("Special instructions must be a string"),
 ];
 
 module.exports = {
