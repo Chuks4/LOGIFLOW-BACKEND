@@ -6,10 +6,15 @@ const login = async (req, res) => {
     const accessToken = await authService.login(email, password, { req, res });
     res.status(200).json({ status: true, ...accessToken });
   } catch (error) {
+    console.log("Error logging in ", error);
     if (error.status) {
-      res.status(error.status).json({ status: false, message: error.message });
+      return res
+        .status(error.status)
+        .json({ status: false, message: error.message });
     } else {
-      res.status(500).json({ status: false, message: "Internal server error" });
+      return res
+        .status(500)
+        .json({ status: false, message: "Internal server error" });
     }
   }
 };
@@ -20,9 +25,13 @@ const refreshToken = async (req, res) => {
     res.status(200).json({ status: true, ...accessToken });
   } catch (error) {
     if (error.status) {
-      res.status(error.status).json({ status: false, message: error.message });
+      return res
+        .status(error.status)
+        .json({ status: false, message: error.message });
     } else {
-      res.status(500).json({ status: false, message: "Internal server error" });
+      return res
+        .status(500)
+        .json({ status: false, message: "Internal server error" });
     }
   }
 };
@@ -33,9 +42,13 @@ const logout = async (req, res) => {
     res.status(200).json({ status: true, message: "Logout successful" });
   } catch (error) {
     if (error.status) {
-      res.status(error.status).json({ status: false, message: error.message });
+      return res
+        .status(error.status)
+        .json({ status: false, message: error.message });
     } else {
-      res.status(500).json({ status: false, message: "Internal server error" });
+      return res
+        .status(500)
+        .json({ status: false, message: "Internal server error" });
     }
   }
 };
@@ -44,18 +57,20 @@ const register = async (req, res) => {
   try {
     const data = req.body;
     const user = await authService.register(data);
-    res
-      .status(201)
-      .json({
-        status: true,
-        message: "User registered successfully",
-        data: user,
-      });
+    res.status(201).json({
+      status: true,
+      message: "User registered successfully",
+      data: user,
+    });
   } catch (error) {
     if (error.status) {
-      res.status(error.status).json({ status: false, message: error.message });
+      return res
+        .status(error.status)
+        .json({ status: false, message: error.message });
     } else {
-      res.status(500).json({ status: false, message: "Internal server error" });
+      return res
+        .status(500)
+        .json({ status: false, message: "Internal server error" });
     }
   }
 };
@@ -67,9 +82,13 @@ const forgotPassword = async (req, res) => {
     res.status(200).json({ status: true, message: result.message });
   } catch (error) {
     if (error.status) {
-      res.status(error.status).json({ status: false, message: error.message });
+      return res
+        .status(error.status)
+        .json({ status: false, message: error.message });
     } else {
-      res.status(500).json({ status: false, message: "Internal server error" });
+      return res
+        .status(500)
+        .json({ status: false, message: "Internal server error" });
     }
   }
 };
@@ -81,9 +100,13 @@ const resetPassword = async (req, res) => {
     res.status(200).json({ status: true, message: result.message });
   } catch (error) {
     if (error.status) {
-      res.status(error.status).json({ status: false, message: error.message });
+      return res
+        .status(error.status)
+        .json({ status: false, message: error.message });
     } else {
-      res.status(500).json({ status: false, message: "Internal server error" });
+      return res
+        .status(500)
+        .json({ status: false, message: "Internal server error" });
     }
   }
 };
@@ -95,9 +118,13 @@ const verifyEmail = async (req, res) => {
     res.status(200).json({ status: true, message: result.message });
   } catch (error) {
     if (error.status) {
-      res.status(error.status).json({ status: false, message: error.message });
+      return res
+        .status(error.status)
+        .json({ status: false, message: error.message });
     } else {
-      res.status(500).json({ status: false, message: "Internal server error" });
+      return res
+        .status(500)
+        .json({ status: false, message: "Internal server error" });
     }
   }
 };

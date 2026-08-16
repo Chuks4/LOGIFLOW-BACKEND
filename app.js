@@ -8,6 +8,19 @@ const shipmentRouter = require("./routes/shipments");
 const geoapifyRouter = require("./routes/geoapify");
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdocs = require("swagger-jsdoc");
+const cors = require("cors");
+
+const allowedOrigins = ["http://localhost:5000"];
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || !allowedOrigins.includes(origin))
+      return callback(null, true);
+    callback(new Error("Not allowed by CORS"));
+  },
+  methods: "GET,PUT,PATCH,POST,DELETE",
+  allowedHeaders: "Content-Type, Authorization",
+  credentials: true,
+};
 
 const swaggerOptions = {
   definition: {
@@ -34,15 +47,16 @@ const swaggerOptions = {
     ],
   },
 
-  apis: ["./routes/*.js"], // files containing annotations as above
+  apis: ["./routes/*.js"],
+  // server: [{ url: "http://localhost:8000/api/v1/docs" }],
 };
 
 const swaggerDocs = swaggerJsdocs(swaggerOptions);
+app.use(cors(corsOptions));
 app.use("/api/v1/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 app.use(express.json());
 app.use(cookieParser());
-// app.use(cors());
 
 // Routes
 app.use("/api/v1/auth", authRouter);
