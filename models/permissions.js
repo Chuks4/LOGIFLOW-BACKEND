@@ -1,26 +1,33 @@
 module.exports = (DataTypes, sequelize) => {
-  const Role = sequelize.define("roles", {
+  const Permissions = sequelize.define("permissions", {
     id: {
       type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
+      DefaultValue: UUID.UUIDV4,
       primaryKey: true,
       allowNull: false,
     },
     name: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
     },
-    desc: {
+    action: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
+    },
+    resource: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
     isActive: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: true,
     },
+    desc: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   });
 
-  return Role;
+  return Permissions;
 };

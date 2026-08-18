@@ -6,6 +6,9 @@ const vehicleRouter = require("./routes/vehicles");
 const userRouter = require("./routes/users");
 const shipmentRouter = require("./routes/shipments");
 const geoapifyRouter = require("./routes/geoapify");
+const permissionRouter = require("./routes/permissions");
+const roleRouter = require("./routes/roles");
+
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdocs = require("swagger-jsdoc");
 const cors = require("cors");
@@ -64,5 +67,7 @@ app.use("/api/v1/vehicles", vehicleRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/shipments", shipmentRouter);
 app.use("/api/v1/geoapify", geoapifyRouter);
+app.use("/api/v1/permissions", permissionRouter);
+app.use("/api/v1/roles", roleRouter);
 
 module.exports = app;

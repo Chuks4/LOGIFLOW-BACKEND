@@ -49,6 +49,8 @@ db.shipmentStatusHistory = require("./shipment_status_history")(
 );
 db.vehicles = require("./vehicles")(DataTypes, sequelize);
 db.tokens = require("./tokens")(DataTypes, sequelize);
+db.permissions = require("./permissions")(DataTypes, sequelize);
+db.role_permission = require("./role_permissions")(DataTypes, sequelize);
 
 // RelationShips
 // User and RefreshToken
@@ -135,6 +137,20 @@ db.users.hasMany(db.tokens, {
 db.tokens.belongsTo(db.users, {
   foreignKey: "userId",
   as: "user",
+});
+
+// Role and Permissions
+db.roles.belongsToMany(db.permissions, {
+  through: db.role_permission,
+  foreignKey: "roleId",
+  otherKey: "permissionId",
+  as: "permissions",
+});
+db.permissions.belongsToMany(db.roles, {
+  through: db.role_permission,
+  foreignKey: "permissionId",
+  otherKey: "roleId",
+  as: "roles",
 });
 
 // Sync the models with the database

@@ -59,6 +59,8 @@ const login = async (email, password, options = {}) => {
     userId: user.id,
     email: user.email,
     emailVerified: user.emailVerified,
+    roleId: user.role?.id,
+    userType: user.role?.name,
   };
   const accessToken = signAccessToken(payload);
   const jti = createJti();

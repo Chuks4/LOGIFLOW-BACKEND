@@ -6,7 +6,6 @@ const login = async (req, res) => {
     const accessToken = await authService.login(email, password, { req, res });
     res.status(200).json({ status: true, ...accessToken });
   } catch (error) {
-    console.log("Error logging in ", error);
     if (error.status) {
       return res
         .status(error.status)

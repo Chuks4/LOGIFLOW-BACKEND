@@ -65,7 +65,7 @@ The system focuses on:
 - [ ] Customer
 - [ ] Driver
 - [ ] Dispatcher
-- [ ] Warehouse Staff
+<!-- - [ ] Warehouse Staff -->
 - [ ] Administrator
 
 ---
