@@ -15,7 +15,8 @@ const create = async (data) => {
     error.status = 409;
     throw error;
   }
-  return roleRepo.create({ name, desc });
+  const tolower = name.trim().toLowerCase();
+  return roleRepo.create({ name: tolower, desc });
 };
 
 /**

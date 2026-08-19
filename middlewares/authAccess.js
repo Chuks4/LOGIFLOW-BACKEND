@@ -6,16 +6,23 @@ const authAccess = (req, res, next) => {
   const [scheme, headerToken] = header.split(" ");
   const cookiesToken = req.cookies.access_token;
   const token = scheme === "Bearer" && headerToken ? headerToken : cookiesToken;
-  if (!token) throw new Error("No token provided");
+  if (!token) {
+    return res
+      .status(401)
+      .json({ status: false, message: "No token provided" });
+  }
 
   try {
     const decoded = jwt.verify(token, privateKey);
     req.user = decoded;
 
     if (!req.user.emailVerified && !req.path.includes("/verify-email")) {
-      return res.status(401).json({
-        message: "Please verify your email to access this resource",
-      });
+      return res
+        .status(401)
+        .json({
+          status: false,
+          message: "Please verify your email to access this resource",
+        });
     }
     next();
   } catch (error) {

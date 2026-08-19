@@ -48,6 +48,36 @@ const swaggerOptions = {
         BearerAuth: [],
       },
     ],
+    tags: [
+      {
+        name: "Auth",
+        description: "Authentication related APIs",
+      },
+      {
+        name: "Onboarding",
+        description: "User onboarding related APIs",
+      },
+      {
+        name: "Roles",
+        description: "Role related APIs",
+      },
+      {
+        name: "Permissions",
+        description: "Permission related APIs",
+      },
+      {
+        name: "Vehicles",
+        description: "Vehicle related APIs",
+      },
+      {
+        name: "Shipments",
+        description: "Shipment related APIs",
+      },
+      {
+        name: "Geoapify",
+        description: "Geoapify related APIs",
+      },
+    ],
   },
 
   apis: ["./routes/*.js"],

@@ -177,14 +177,14 @@ Responsibilities
 
 ---
 
-## Warehouse Staff
+<!-- ## Warehouse Staff
 
 Responsibilities
 
 - Receive shipments
 - Sort packages
 - Dispatch packages
-- Update inventory
+- Update inventory -->
 
 ---
 
@@ -195,7 +195,7 @@ Responsibilities
 - Manage users
 - Manage pricing
 - View analytics
-- Manage warehouses
+<!-- - Manage warehouses -->
 - Configure system
 
 ---

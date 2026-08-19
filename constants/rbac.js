@@ -1,6 +1,6 @@
 "use strict";
 
-ALLOWED_ACTIONS = Object.freeze({
+const ALLOWED_ACTIONS = Object.freeze({
   create: "create",
   read: "read",
   update: "update",
@@ -11,4 +11,5 @@ ALLOWED_ACTIONS = Object.freeze({
   approve: "approve",
   reject: "reject",
 });
+
 module.exports = { ALLOWED_ACTIONS };
