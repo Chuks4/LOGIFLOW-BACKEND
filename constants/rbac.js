@@ -12,4 +12,22 @@ const ALLOWED_ACTIONS = Object.freeze({
   reject: "reject",
 });
 
-module.exports = { ALLOWED_ACTIONS };
+const ALLOWED_RESOURCES = Object.freeze({
+  user: "user",
+  role: "role",
+  permission: "permission",
+  shipments: "shipments",
+  vehicles: "vehicles",
+  drivers: "drivers",
+  orders: "orders",
+  invoices: "invoices",
+  payments: "payments",
+  reports: "reports",
+  settings: "settings",
+  dashboard: "dashboard",
+  profile: "profile",
+  notifications: "notifications",
+  messages: "messages",
+});
+
+module.exports = { ALLOWED_ACTIONS, ALLOWED_RESOURCES };

@@ -23,6 +23,7 @@ const update = async (req, res) => {
     const updated = await permService.update(req.params.id, req.body);
     return res.status(200).json({ status: true, data: updated });
   } catch (error) {
+    console.log("Error", error);
     if (error.status) {
       return res
         .status(error.status)
@@ -43,7 +44,7 @@ const remove = async (req, res) => {
     if (error.status) {
       return res
         .status(error.status)
-        .json({ status: false, error: error.message });
+        .json({ status: false, message: error.message });
     }
 
     return res
@@ -57,10 +58,11 @@ const geAllByRoleId = async (req, res) => {
     const permissions = await getPermissionsByRoleId(req.params.roleId);
     return res.status(200).json({ status: true, data: permissions });
   } catch (error) {
+    console.log("Error", error);
     if (error.status) {
       return res
         .status(error.status)
-        .json({ status: false, error: error.message });
+        .json({ status: false, message: error.message });
     }
 
     return res

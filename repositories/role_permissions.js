@@ -1,5 +1,5 @@
 const db = require("../models");
 const base = require("./baseRespository");
 
-const rolesRepo = base(db.roles);
-module.exports =rolesRepo
+const rolesPermRepo = base(db.role_permission);
+module.exports = rolesPermRepo;

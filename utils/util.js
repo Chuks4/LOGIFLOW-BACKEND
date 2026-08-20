@@ -6,7 +6,7 @@ const REFRESH_TTL_SEC = process.env.REFRESH_TTL_SEC;
 const db = require("../models");
 
 const signAccessToken = (payload) => {
-  return jwt.sign(payload, privateAccessToken, { expiresIn: "24h" });
+  return jwt.sign(payload, privateAccessToken, { expiresIn: "15m" });
 };
 
 const signRefreshToken = (payload, jti) => {

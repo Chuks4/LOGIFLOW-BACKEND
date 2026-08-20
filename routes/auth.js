@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const authController = require("../controllers/auth");
+const authAccess = require("../middlewares/authAccess");
 
 const {
   validateLogin,
@@ -76,7 +77,7 @@ router.post("/login", validateLogin, authController.login);
  *       500:
  *         description: Internal server error
  */
-router.post("/refresh-token", authController.refreshToken);
+router.post("/refresh-token", authAccess, authController.refreshToken);
 
 /**
  * @swagger
@@ -148,7 +149,7 @@ router.post("/logout", authController.logout);
  *               phoneNumber:
  *                 type: string
  *                 example: "08012345678"
-  *               address:
+ *               address:
  *                 type: string
  *                 example: "10 Oluwole Aiyetoro Street, Victoria Island, Lagos"
  *     responses:

@@ -1,5 +1,5 @@
 const permsRepo = require("../repositories/permissions");
-const { ALLOWED_ACTIONS } = require("../constants/rbac");
+const { ALLOWED_ACTIONS, ALLOWED_RESOURCES } = require("../constants/rbac");
 
 /**
  * Create a permission
@@ -18,13 +18,19 @@ const create = async (data) => {
 
   if (permission) {
     const error = new Error("Permission already exists");
-    error.code = 409;
+    error.status = 409;
     throw error;
   }
 
   if (!Object.prototype.hasOwnProperty.call(ALLOWED_ACTIONS, action)) {
     const error = new Error("Invalid action");
-    error.code = 400;
+    error.status = 400;
+    throw error;
+  }
+
+  if (!Object.prototype.hasOwnProperty.call(ALLOWED_RESOURCES, resource)) {
+    const error = new Error("Invalid resource");
+    error.status = 400;
     throw error;
   }
 
@@ -44,16 +50,22 @@ const update = async (id, data) => {
 
   if (!permission) {
     const error = new Error("Permission not found");
-    error.code = 404;
+    error.status = 404;
     throw error;
   }
 
-  const actionLower = action.trim().toLowercase();
-  const resourceLower = resource.trim().toLowercase();
+  const actionLower = action.trim().toLowerCase();
+  const resourceLower = resource.trim().toLowerCase();
 
   if (!Object.prototype.hasOwnProperty.call(ALLOWED_ACTIONS, actionLower)) {
     const error = new Error("Invalid action");
-    error.code = 400;
+    error.status = 400;
+    throw error;
+  }
+
+  if (!Object.prototype.hasOwnProperty.call(ALLOWED_RESOURCES, resource)) {
+    const error = new Error("Invalid resource");
+    error.status = 400;
     throw error;
   }
 
@@ -61,7 +73,7 @@ const update = async (id, data) => {
     desc: desc || permission.desc,
     resource: resourceLower || permission.resource,
     action: actionLower || permission.action,
-    name: `${resource}:${action}`,
+    name: `${resourceLower}:${actionLower}` || permission.name,
     isActive: isActive !== undefined ? isActive : permission.isActive,
   });
 
@@ -75,7 +87,7 @@ const remove = async (id) => {
 
   if (!permission) {
     const error = new Error("Permission not found");
-    error.code = 404;
+    error.status = 404;
     throw error;
   }
 

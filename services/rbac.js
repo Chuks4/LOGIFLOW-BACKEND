@@ -14,12 +14,12 @@ const getPermissionsByRoleId = async (roleId) => {
     attributes: ["resource", "action"],
   });
 
-  return permissions.map((p) => `${p.action}:${permission.resource}}`);
+  return permissions.map((p) => `${p.resource}:${p.action}`);
 };
 const can = async (roleId, resource, action) => {
   // TODO: implement RBAC
   const permissions = await getPermissionsByRoleId(roleId);
-  return permissions.includes(`${action}:${resource}`);
+  return permissions.includes(`${resource}:${action}`);
 };
 
 module.exports = { can, getPermissionsByRoleId };

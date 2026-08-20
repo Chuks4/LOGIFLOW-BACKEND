@@ -1,10 +1,11 @@
 const jwt = require("jsonwebtoken");
 const privateKey = process.env.JWT_SECRET_KEY;
+const refreshKey = process.env.JWT_REFRESH_SECRET_KEY;
 
 const authAccess = (req, res, next) => {
   const header = req.headers.authorization || "";
   const [scheme, headerToken] = header.split(" ");
-  const cookiesToken = req.cookies.access_token;
+  const cookiesToken = req.cookies?.access_token;
   const token = scheme === "Bearer" && headerToken ? headerToken : cookiesToken;
   if (!token) {
     return res
@@ -13,7 +14,8 @@ const authAccess = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, privateKey);
+    const key = headerToken ? privateKey : refreshKey;
+    const decoded = jwt.verify(token, key);
     req.user = decoded;
 
     if (!req.user.emailVerified && !req.path.includes("/verify-email")) {

@@ -7,7 +7,7 @@ module.exports = (DataTypes, sequelize) => {
       allowNull: false,
     },
     roleId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
       references: {
         model: "roles",
@@ -15,7 +15,7 @@ module.exports = (DataTypes, sequelize) => {
       },
     },
     permissionId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
       references: {
         model: "permissions",

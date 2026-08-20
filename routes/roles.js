@@ -2,6 +2,7 @@ const router = require("express").Router();
 const rolesController = require("../controllers/roles");
 const authAccess = require("../middlewares/authAccess");
 const { validateRole } = require("../validators/rbac");
+const rolePermsController = require("../controllers/role_permission");
 
 /**
  * @swagger
@@ -224,5 +225,111 @@ router.put("/:id", authAccess, rolesController.update);
  *         description: Internal server error
  */
 router.delete("/:id", authAccess, rolesController.remove);
+
+/**
+ * @swagger
+ * /api/v1/roles/{id}/assign-permissions:
+ *   post:
+ *     summary: Assign permissions to a role
+ *     tags:
+ *       - Roles
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The ID of the role
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - permissionIds
+ *             properties:
+ *               permissionIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: uuid
+ *                 description: The list of permission IDs to assign to the role
+ *                 example:
+ *                   - "07c1a5ae-9fd7-52c7-2223-68e350e71fc3"
+ *                   - "07c1a5ae-9fd7-52c7-2223-68e350e71fc4"
+ *     responses:
+ *       200:
+ *         description: Permissions assigned successfully
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Role or permission not found
+ *       500:
+ *         description: Internal server error
+ */
+router.post(
+  "/:id/assign-permissions",
+  authAccess,
+  rolePermsController.assignPermissions,
+);
+
+/**
+ * @swagger
+ * /api/v1/roles/{id}/remove-permissions:
+ *   delete:
+ *     summary: Remove permissions from a role
+ *     tags:
+ *       - Roles
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The ID of the role
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - permissionIds
+ *             properties:
+ *               permissionIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: uuid
+ *                 description: The list of permission IDs to remove to the role
+ *                 example:
+ *                   - "07c1a5ae-9fd7-52c7-2223-68e350e71fc3"
+ *                   - "07c1a5ae-9fd7-52c7-2223-68e350e71fc4"
+ *     responses:
+ *       200:
+ *         description: Permissions removed successfully
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Role or permission not found
+ *       500:
+ *         description: Internal server error
+ */
+router.delete(
+  "/:id/remove-permissions",
+  authAccess,
+  rolePermsController.removePermissions,
+);
 
 module.exports = router;
