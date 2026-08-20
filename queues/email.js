@@ -23,7 +23,7 @@ const enquePasswordResetEmail = async (emailData) => {
 };
 
 const enqueEmailVerificationEmail = async (emailData) => {
-  await emailQueue.add("email-verification-email", emailData, {
+  await emailQueue.add("verification-email", emailData, {
     attempts: 3,
     backoff: {
       type: "exponential",

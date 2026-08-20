@@ -1,6 +1,6 @@
 const db = require("../models");
-const baseRepo = require("./baseRespository");
+const baseRespository = require("./baseRespository");
 
-const roles = baseRepo(db.roles);
+const roles = baseRespository(db.roles);
 
-module.exports = { ...roles };
+module.exports = roles

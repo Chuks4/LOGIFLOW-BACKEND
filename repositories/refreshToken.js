@@ -3,4 +3,4 @@ const baseRepo = require("./baseRespository");
 
 const refresh = baseRepo(db.refreshToken);
 
-module.exports = { ...refresh };
+module.exports = refresh;

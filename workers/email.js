@@ -17,7 +17,7 @@ const emailWorker = new Worker(
         logger.info("Password reset email sent", { recipient: job.data.to });
         break;
 
-      case "email-verification-email":
+      case "verification-email":
         await emailService.sendEmail(job.data);
         logger.info("Email verification email sent", {
           recipient: job.data.to,

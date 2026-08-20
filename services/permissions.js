@@ -37,7 +37,7 @@ const create = async (data) => {
 };
 
 const update = async (id, data) => {
-  const { desc, resource, action } = data;
+  const { desc, resource, action, isActive } = data;
   const permission = await permsRepo.findOne({
     where: { id },
   });
@@ -48,7 +48,10 @@ const update = async (id, data) => {
     throw error;
   }
 
-  if (!Object.prototype.hasOwnProperty.call(ALLOWED_ACTIONS, action)) {
+  const actionLower = action.trim().toLowercase();
+  const resourceLower = resource.trim().toLowercase();
+
+  if (!Object.prototype.hasOwnProperty.call(ALLOWED_ACTIONS, actionLower)) {
     const error = new Error("Invalid action");
     error.code = 400;
     throw error;
@@ -56,14 +59,13 @@ const update = async (id, data) => {
 
   await permission.update({
     desc: desc || permission.desc,
-    resource: resource || permission.resource,
-    action: action || permission.action,
+    resource: resourceLower || permission.resource,
+    action: actionLower || permission.action,
     name: `${resource}:${action}`,
+    isActive: isActive !== undefined ? isActive : permission.isActive,
   });
 
-  return await permsRepo.findOne({
-    where: { id },
-  });
+  return await permsRepo.findById(id);
 };
 
 const remove = async (id) => {

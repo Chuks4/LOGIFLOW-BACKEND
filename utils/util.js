@@ -6,17 +6,18 @@ const REFRESH_TTL_SEC = process.env.REFRESH_TTL_SEC;
 const db = require("../models");
 
 const signAccessToken = (payload) => {
-  jwt.sign(payload, privateAccessToken, { expiresIn: "15m" });
+  return jwt.sign(payload, privateAccessToken, { expiresIn: "24h" });
 };
 
 const signRefreshToken = (payload, jti) => {
-  jwt.sign({ ...payload, jti }, privateRefreshToken, {
-    expiresIn: REFRESH_TTL_SEC,
+  return jwt.sign({ ...payload, jti }, privateRefreshToken, {
+    expiresIn: "7d",
   });
 };
 
 const hashToken = (token) => {
-  return crypto.createHash("sha256").update(token).digest("hex");
+  const stringified = String(token);
+  return crypto.createHash("sha256").update(stringified).digest("hex");
 };
 
 const createJti = () => {
@@ -25,15 +26,15 @@ const createJti = () => {
 
 const createRefreshToken = async ({
   user,
-  refreshToken,
   jti,
+  refreshToken,
   ip,
   userAgent,
 }) => {
   const tokenHash = hashToken(refreshToken);
   const expiresAt = new Date(Date.now() + REFRESH_TTL_SEC * 1000);
-  await db.refreshToken.create({
-    userId: user.id,
+  return await db.refreshToken.create({
+    userId: user?.id,
     tokenHash,
     jti,
     expiresAt,
@@ -43,17 +44,18 @@ const createRefreshToken = async ({
 };
 
 const setRefreshCookie = (option = {}, refreshToken) => {
+  const { res } = option;
   const isProd = process.env.NODE_ENV === "production";
-  options.cookie("refresh_token", refreshToken, {
+  return res.cookie("refresh_token", refreshToken, {
     httpOnly: true,
     secure: isProd,
     sameSite: "strict",
-    path: "/api/v1/auth/refresh",
-    maxAge: REFRESH_TTL_SEC * 1000,
+    path: "/",
+    maxAge: parseInt(REFRESH_TTL_SEC) * 1000,
   });
 };
 
-const rotateRefreshToken = async (token, user, options = {}) => {
+const rotateRefreshToken = async (token, jti, user, options = {}) => {
   const { req, res } = options;
   // revoke old
   token.revokedAt = new Date();
@@ -61,17 +63,24 @@ const rotateRefreshToken = async (token, user, options = {}) => {
   await token.update({ replacedBy: newJti });
 
   // issue new
-  const newAccess = signAccessToken(user);
-  const newRefresh = signRefreshToken(user, newJti);
+  const payload = {
+    id: user?.id,
+    email: user?.email,
+    emailVerified: user?.emailVerified,
+    roleId: user?.role?.id,
+    userType: user?.role?.name,
+  };
+  const newAccess = signAccessToken(payload);
+  const newRefresh = signRefreshToken(payload, newJti);
   await createRefreshToken({
-    userId: user.id,
+    user: user,
     refreshToken: newRefresh,
-    jti: newJti,
     ip: req.ip,
+    jti,
     userAgent: req.headers["user-agent"] || "",
   });
 
-  setRefreshCookie(res, newRefresh);
+  setRefreshCookie(options, newRefresh);
   return { accessToken: newAccess };
 };
 
@@ -131,5 +140,5 @@ module.exports = {
   isEmailValid,
   isUserAtLeastEighteen,
   deleteFile,
-  generateTrackingNumber
+  generateTrackingNumber,
 };

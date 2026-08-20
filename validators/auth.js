@@ -30,8 +30,6 @@ const validateRegister = [
     .withMessage("Date of birth is not valid"),
   body("gender").trim().notEmpty().withMessage("Gender is required"),
   body("phoneNumber").trim().notEmpty().withMessage("Phone number is required"),
-  body("country").trim().notEmpty().withMessage("Country is required"),
-  body("city").trim().notEmpty().withMessage("City is required"),
   body("address").trim().notEmpty().withMessage("Address is required"),
 ];
 

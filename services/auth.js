@@ -56,7 +56,7 @@ const login = async (email, password, options = {}) => {
   }
 
   const payload = {
-    userId: user.id,
+    id: user.id,
     email: user.email,
     emailVerified: user.emailVerified,
     roleId: user.role?.id,
@@ -67,9 +67,8 @@ const login = async (email, password, options = {}) => {
   const refreshToken = signRefreshToken(payload, jti);
   const ip = req.ip;
   const userAgent = req.headers["user-agent"] || "";
-
-  await createRefreshToken(user, refreshToken, jti, ip, userAgent);
-  setRefreshCookie(res, refreshToken);
+  await createRefreshToken({ user, jti, refreshToken, ip, userAgent });
+  setRefreshCookie(options, refreshToken);
   await user.update({ lastLogin: new Date() });
   return { accessToken };
 };
@@ -90,18 +89,23 @@ const refreshToken = async (options = {}) => {
 
   let decoded;
   try {
-    decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+    decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET_KEY);
   } catch (err) {
     const error = new Error("Invalid or expired refresh token");
     error.status = 401;
     throw error;
   }
 
+  const jti = createJti();
   const tokenHash = hashToken(token);
   const existing = await refreshTokenRepo.findOne({
-    tokenHash,
-    jti: decoded.jti,
-    include: { model: db.users, as: "user" },
+    where: { tokenHash, jti: decoded.jti },
+    include: {
+      model: db.users,
+      as: "user",
+      attributes: ["id"],
+      include: { model: db.roles, as: "role", attributes: ["id", "name"] },
+    },
   });
 
   if (!existing) {
@@ -124,6 +128,7 @@ const refreshToken = async (options = {}) => {
 
   const { accessToken } = await rotateRefreshToken(
     existing,
+    jti,
     existing.user,
     options,
   );
@@ -138,7 +143,7 @@ const refreshToken = async (options = {}) => {
  */
 const logout = async (options = {}) => {
   const { req, res } = options;
-  const token = req.cookies?.refresh_token || "";
+  const token = req.cookies?.refresh_token;
   if (!token) {
     const error = new Error("Refresh token not recognized");
     error.status = 401;
@@ -146,13 +151,13 @@ const logout = async (options = {}) => {
   }
 
   const tokenHash = hashToken(token);
-  const existing = await refreshTokenRepo.findOne({ tokenHash });
+  const existing = await refreshTokenRepo.findOne({ where: { tokenHash } });
 
   if (existing && !existing.revokedAt) {
     await existing.update({ revokedAt: new Date() });
   }
 
-  res.clearCookie("refresh_token", { path: "/api/v1/auth/refresh" });
+  res.clearCookie("refresh_token", { path: "/" });
   return { message: "Logged out successfully" };
 };
 
@@ -178,6 +183,7 @@ const register = async (data) => {
     gender,
     dob,
     phoneNumber,
+    address,
   } = data;
 
   if (email && !isEmailValid(email)) {
@@ -203,7 +209,7 @@ const register = async (data) => {
 
   const role = roleId
     ? await roleRepository.findById(roleId)
-    : await roleRepository.findOne({ where: { name: "Customer" } });
+    : await roleRepository.findOne({ where: { name: "customer" } });
 
   if (!role) {
     const error = new Error("Role not found");
@@ -220,12 +226,14 @@ const register = async (data) => {
     gender,
     dob,
     phoneNumber,
+    address,
   });
 
   const token = createJti();
   const hashedToken = hashToken(token);
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 days from now
 
+  console.log("Token ", token);
   await tokensRepository.create({
     userId: user.id,
     tokenHash: hashedToken,
@@ -234,7 +242,7 @@ const register = async (data) => {
   });
 
   const mailOption = {
-    to: user.email,
+    to: email,
     subject: "Email Verification",
     html: emailVerificationMail(token),
   };
@@ -280,6 +288,7 @@ const forgotPassword = async (email) => {
     subject: "Password Reset",
     html: passwordResetMail(token),
   };
+  console.log("Token ", token);
 
   // Enqueue the password reset email to be sent asynchronously
   await enquePasswordResetEmail(mailOption);
@@ -298,12 +307,11 @@ const resetPassword = async (data) => {
   const { token, newPassword } = data;
   const hashedToken = hashToken(token);
   const existingToken = await tokensRepository.findOne({
-    tokenHash: hashedToken,
-    purpose: "password_reset",
+    where: { tokenHash: hashedToken, purpose: "password_reset" },
   });
 
   if (!existingToken) {
-    const error = new Error("Invalid or expired reset token");
+    const error = new Error("Token not recognized");
     error.status = 400;
     throw error;
   }
@@ -315,12 +323,11 @@ const resetPassword = async (data) => {
   }
 
   const hashedPassword = await bcrypt.hash(newPassword, 10);
-  await userRepository.update(
-    { id: existingToken.userId },
-    { password: hashedPassword },
-  );
+  await userRepository.update(existingToken.userId, {
+    password: hashedPassword,
+  });
 
-  await existingToken.destroy();
+  // await existingToken.update({isUsed: true});
   return { message: "Password reset successfully" };
 };
 
@@ -332,12 +339,17 @@ const resetPassword = async (data) => {
 const verifyEmail = async (token) => {
   const hashedToken = hashToken(token);
   const existingToken = await tokensRepository.findOne({
-    tokenHash: hashedToken,
-    purpose: "email_verification",
-    include: { model: db.users, as: "user", attributes: ["firstName"] },
+    where: { tokenHash: hashedToken, purpose: "email_verification" },
+    include: {
+      model: db.users,
+      as: "user",
+      attributes: ["firstName", "email"],
+      isUsed: false,
+    },
   });
+
   if (!existingToken) {
-    const error = new Error("Invalid or expired verification token");
+    const error = new Error("Invalid or used verification token");
     error.status = 400;
     throw error;
   }
@@ -348,11 +360,8 @@ const verifyEmail = async (token) => {
     throw error;
   }
 
-  await userRepository.update(
-    { id: existingToken.userId },
-    { emailVerified: true },
-  );
-  await existingToken.destroy();
+  await userRepository.update(existingToken.userId, { emailVerified: true });
+  await existingToken.update({ isUsed: true });
 
   const mailOption = {
     to: existingToken.user.email,

@@ -65,6 +65,14 @@ router.post("/", authAccess, validateRole, rolesController.create);
  *           example: admin
  *
  *       - in: query
+ *         name: status
+ *         description: Filter by role status (true:active, false:inactive)
+ *         required: false
+ *         schema:
+ *           type: boolean
+ *           example: true
+ *
+ *       - in: query
  *         name: limit
  *         description: The number of records to return
  *         required: false
@@ -81,14 +89,6 @@ router.post("/", authAccess, validateRole, rolesController.create);
  *           type: integer
  *           minimum: 1
  *           example: 1
- *
- *       - in: query
- *         name: status
- *         description: The status of the role
- *         required: false
- *         schema:
- *           type: boolean
- *           example: true
  *
  *     responses:
  *       200:
@@ -164,12 +164,16 @@ router.get("/:id", authAccess, rolesController.getById);
  *               - name
  *             properties:
  *               name:
- *                 type: string
+ *                 type: super_admin
  *                 example: admin
  *               desc:
  *                 type: string
  *                 description: The role description
  *                 example: Admin role
+ *               isActive:
+ *                 type: boolean
+ *                 description: The role status (true:active, false:inactive)
+ *                 example: true
  *     responses:
  *       200:
  *         description: Role updated successfully

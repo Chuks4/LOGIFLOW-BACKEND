@@ -1,4 +1,6 @@
 const roleRepo = require("../repositories/role");
+const { Op } = require("sequelize");
+const db = require("../models");
 
 /**
  * Create a role
@@ -26,9 +28,14 @@ const create = async (data) => {
  * @returns {Promise<Object>} Updated role object
  */
 const update = async (id, data) => {
-  const { name, desc } = data;
+  const { name, desc, isActive } = data;
   const role = await getById(id);
-  role.update({ name, desc });
+  const toLower = name.trim().toLowerCase();
+  await role.update({
+    name: toLower || role.name,
+    desc: desc || role.desc,
+    isActive: isActive || role.isActive,
+  });
   return getById(id);
 };
 
@@ -64,7 +71,7 @@ const getAll = async (query) => {
   const where = {};
 
   if (keyword) where.name = { [Op.iLike]: `%${keyword}%` };
-  if (status) where.status = status;
+  if (status) where.isActive = status;
 
   const { count, rows } = await roleRepo.findAndCountAll({
     where,
@@ -87,6 +94,12 @@ const getAll = async (query) => {
  */
 const remove = async (id) => {
   const role = await getById(id);
+  const user = await db.users.findOne({ where: { roleId: id } });
+  if (user) {
+    const error = new Error("Role is in use");
+    error.status = 409;
+    throw error;
+  }
   await role.destroy();
   return id;
 };

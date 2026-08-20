@@ -68,13 +68,6 @@ router.post("/login", validateLogin, authController.login);
  *     tags:
  *       - Auth
  *     security: []
- *     parameters:
- *       - in: cookie
- *         name: refreshToken
- *         required: true
- *         schema:
- *           type: string
- *         description: Refresh token stored in the HTTP cookie.
  *     responses:
  *       200:
  *         description: Access token refreshed successfully
@@ -155,6 +148,9 @@ router.post("/logout", authController.logout);
  *               phoneNumber:
  *                 type: string
  *                 example: "08012345678"
+  *               address:
+ *                 type: string
+ *                 example: "10 Oluwole Aiyetoro Street, Victoria Island, Lagos"
  *     responses:
  *       201:
  *         description: User registered successfully

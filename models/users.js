@@ -4,7 +4,7 @@ module.exports = (DataTypes, sequelize) => {
     {
       id: {
         type: DataTypes.UUID,
-        defaultValues: DataTypes.UUIDV4,
+        defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
         allowNull: false,
       },
@@ -57,15 +57,15 @@ module.exports = (DataTypes, sequelize) => {
       },
       country: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       state: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       city: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       address: {
         type: DataTypes.STRING,

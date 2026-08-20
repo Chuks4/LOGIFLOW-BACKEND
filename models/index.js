@@ -67,10 +67,12 @@ db.refreshToken.belongsTo(db.users, {
 db.roles.hasMany(db.users, {
   foreignKey: "roleId",
   as: "users",
+  onDelete: "RESTRICT",
 });
 db.users.belongsTo(db.roles, {
   as: "role",
   foreignKey: "roleId",
+  onDelete: "RESTRICT",
 });
 
 // User and Shipments
