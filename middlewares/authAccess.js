@@ -5,7 +5,7 @@ const refreshKey = process.env.JWT_REFRESH_SECRET_KEY;
 const authAccess = (req, res, next) => {
   const header = req.headers.authorization || "";
   const [scheme, headerToken] = header.split(" ");
-  const cookiesToken = req.cookies?.access_token;
+  const cookiesToken = req.cookies?.refresh_token;
   const token = scheme === "Bearer" && headerToken ? headerToken : cookiesToken;
   if (!token) {
     return res

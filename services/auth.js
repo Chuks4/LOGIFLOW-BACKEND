@@ -62,6 +62,7 @@ const login = async (email, password, options = {}) => {
     roleId: user.role?.id,
     userType: user.role?.name,
   };
+
   const accessToken = signAccessToken(payload);
   const jti = createJti();
   const refreshToken = signRefreshToken(payload, jti);
@@ -103,7 +104,7 @@ const refreshToken = async (options = {}) => {
     include: {
       model: db.users,
       as: "user",
-      attributes: ["id"],
+      attributes: ["id", "email", "emailVerified"],
       include: { model: db.roles, as: "role", attributes: ["id", "name"] },
     },
   });
@@ -143,7 +144,7 @@ const refreshToken = async (options = {}) => {
  */
 const logout = async (options = {}) => {
   const { req, res } = options;
-  const token = req.cookies?.refresh_token;
+  const token = req.cookies?.refresh_token || "";
   if (!token) {
     const error = new Error("Refresh token not recognized");
     error.status = 401;
@@ -233,7 +234,6 @@ const register = async (data) => {
   const hashedToken = hashToken(token);
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 days from now
 
-  console.log("Token ", token);
   await tokensRepository.create({
     userId: user.id,
     tokenHash: hashedToken,
@@ -288,7 +288,6 @@ const forgotPassword = async (email) => {
     subject: "Password Reset",
     html: passwordResetMail(token),
   };
-  console.log("Token ", token);
 
   // Enqueue the password reset email to be sent asynchronously
   await enquePasswordResetEmail(mailOption);

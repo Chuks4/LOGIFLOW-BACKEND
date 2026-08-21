@@ -59,29 +59,28 @@ const rotateRefreshToken = async (token, jti, user, options = {}) => {
   const { req, res } = options;
   // revoke old
   token.revokedAt = new Date();
-  const newJti = createJti();
-  await token.update({ replacedBy: newJti });
+  await token.update({ replacedBy: jti });
 
   // issue new
   const payload = {
-    id: user?.id,
-    email: user?.email,
-    emailVerified: user?.emailVerified,
-    roleId: user?.role?.id,
-    userType: user?.role?.name,
+    id: user.id,
+    email: user.email,
+    emailVerified: user.emailVerified,
+    roleId: user.role?.id,
+    userType: user.role?.name,
   };
-  const newAccess = signAccessToken(payload);
-  const newRefresh = signRefreshToken(payload, newJti);
+  const accessToken = signAccessToken(payload);
+  const refreshToken = signRefreshToken(payload, jti);
   await createRefreshToken({
-    user: user,
-    refreshToken: newRefresh,
+    user,
+    refreshToken,
     ip: req.ip,
     jti,
     userAgent: req.headers["user-agent"] || "",
   });
 
-  setRefreshCookie(options, newRefresh);
-  return { accessToken: newAccess };
+  setRefreshCookie(options, refreshToken);
+  return { accessToken };
 };
 
 const isEmailValid = (email) => {
