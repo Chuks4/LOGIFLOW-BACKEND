@@ -3,7 +3,7 @@ const vehicleService = require("../services/vehicles");
 const create = async (req, res) => {
   try {
     const vehicle = await vehicleService.create(req.body);
-    res.status(201).json({ status: true, data: vehicle });
+   return res.status(201).json({ status: true, data: vehicle });
   } catch (error) {
     if (error.status) {
       return res
@@ -18,7 +18,7 @@ const create = async (req, res) => {
 const getAll = async (req, res) => {
   try {
     const vehicles = await vehicleService.getAll(req.query);
-    res.status(200).json({ status: true, data: vehicles });
+   return res.status(200).json({ status: true, data: vehicles });
   } catch (error) {
     if (error.status) {
       return res
@@ -33,7 +33,7 @@ const getAll = async (req, res) => {
 const getById = async (req, res) => {
   try {
     const vehicle = await vehicleService.getById(req.params.id);
-    res.status(200).json({ status: true, data: vehicle });
+    return res.status(200).json({ status: true, data: vehicle });
   } catch (error) {
     if (error.status) {
       return res
@@ -44,11 +44,11 @@ const getById = async (req, res) => {
     }
   }
 };
-
+    
 const update = async (req, res) => {
   try {
     const vehicle = await vehicleService.update(req.params.id, req.body);
-    res.status(200).json({ status: true, data: vehicle });
+    return res.status(200).json({ status: true, data: vehicle });
   } catch (error) {
     if (error.status) {
       return res
@@ -62,7 +62,10 @@ const update = async (req, res) => {
 
 const assignDriver = async (req, res) => {
   try {
-    const vehicle = await vehicleService.assignDriver(req.params.id, req.body);
+    const vehicle = await vehicleService.assignDriver(
+      req.params.id,
+      req.body.driverId,
+    );
     res.status(200).json({ status: true, data: vehicle });
   } catch (error) {
     if (error.status) {

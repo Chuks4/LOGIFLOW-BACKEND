@@ -40,8 +40,9 @@ const login = async (email, password, options = {}) => {
     throw error;
   }
 
+  const emailLower = email.trim().toLowerCase()
   const { req, res } = options;
-  const user = await userRepository.findByEmail(email);
+  const user = await userRepository.findByEmail(emailLower);
   if (!user) {
     const error = new Error("Invalid Credentials");
     error.status = 401;
@@ -216,6 +217,12 @@ const register = async (data) => {
     const error = new Error("Role not found");
     error.status = 404;
     throw error;
+  }
+
+  if(!role.isActive){
+    const error = new Error("Role is not activated yet")
+    error.status = 400
+    throw error
   }
 
   const user = await userRepository.create({

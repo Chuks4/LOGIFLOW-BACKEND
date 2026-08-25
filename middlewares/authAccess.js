@@ -19,20 +19,18 @@ const authAccess = (req, res, next) => {
     req.user = decoded;
 
     if (!req.user.emailVerified && !req.path.includes("/verify-email")) {
-      return res
-        .status(401)
-        .json({
-          status: false,
-          message: "Please verify your email to access this resource",
-        });
+      return res.status(401).json({
+        status: false,
+        message: "Please verify your email to access this resource",
+      });
     }
     next();
   } catch (error) {
-    if (error === "TokenExpiredError") {
+    if (error.name === "TokenExpiredError") {
       return res.status(401).json({
         message: "Token expired",
       });
-    } else if (error === "JsonWebTokenError") {
+    } else if (error.name === "JsonWebTokenError") {
       return res.status(401).json({
         message: "Invalid token",
       });

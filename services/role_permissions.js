@@ -16,10 +16,12 @@ const assignPermissions = async (roleId, permissionIds) => {
     throw error;
   }
 
+
   for (const permissionId of permissionIds) {
     const existing = await rolePermRepo.findOne({
       where: { roleId, permissionId },
     });
+
 
     if (!existing) {
       await rolePermRepo.create({ roleId, permissionId });

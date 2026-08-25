@@ -3,6 +3,7 @@ const rolesController = require("../controllers/roles");
 const authAccess = require("../middlewares/authAccess");
 const { validateRole } = require("../validators/rbac");
 const rolePermsController = require("../controllers/role_permission");
+const { hasAccessTo } = require("../middlewares/authorize");
 
 /**
  * @swagger
@@ -44,7 +45,13 @@ const rolePermsController = require("../controllers/role_permission");
  *       500:
  *         description: Internal server error
  */
-router.post("/", authAccess, validateRole, rolesController.create);
+router.post(
+  "/",
+  authAccess,
+  validateRole,
+  // hasAccessTo("role", "create"),
+  rolesController.create,
+);
 
 /**
  * @swagger

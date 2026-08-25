@@ -73,7 +73,13 @@ const getAll = async (query) => {
  * @returns {Promise<Object>} Vehicle Object
  */
 const getById = async (id) => {
-  const vehicle = await vehicleRepo.findByPk(id);
+  const vehicle = await vehicleRepo.findById(id, {
+    include: {
+      model: db.users,
+      as: "driver",
+      attributes: ["id", "firstName", "lastName"],
+    },
+  });
   if (!vehicle) {
     const error = new Error("Vehicle not found");
     error.status = 404;
@@ -90,20 +96,20 @@ const getById = async (id) => {
  * @returns {Promise<Object>} Updated Vehicle Object
  */
 const update = async (id, data) => {
-  const vehicle = await vehicleRepo.findByPk(id);
+  const vehicle = await getById(id);
   if (!vehicle) {
     const error = new Error("Vehicle not found");
     error.status = 404;
     throw error;
   }
 
-  await vehicleRepo.update(data, { where: { id } });
-  return vehicleRepo.findByPk(id);
+  await vehicle.update({ ...data });
+  return await getById(id);
 };
 
 const assignDriver = async (id, driverId) => {
-  const vehicle = await vehicleRepo.findByPk(id);
-  const driver = await userRepo.findByPk(driverId, {
+  const vehicle = await vehicleRepo.findById(id);
+  const driver = await userRepo.findById(driverId, {
     include: { model: db.roles, as: "role", attributes: ["name"] },
   });
 
@@ -125,8 +131,8 @@ const assignDriver = async (id, driverId) => {
     throw error;
   }
 
-  await vehicleRepo.update({ driverId }, { where: { id } });
-  return vehicleRepo.findByPk(id);
+  await vehicle.update({ driverId });
+  return await getById(id);
 };
 
 /**
@@ -135,14 +141,14 @@ const assignDriver = async (id, driverId) => {
  * @returns {UUID} Deleted vehicle id
  */
 const deleteById = async (id) => {
-  const vehicle = await vehicleRepo.findByPk(id);
+  const vehicle = await vehicleRepo.findById(id);
   if (!vehicle) {
     const error = new Error("Vehicle not found");
     error.status = 404;
     throw error;
   }
 
-  await vehicleRepo.destroy({ where: { id } });
+  await vehicleRepo.delete({ where: { id } });
   return id;
 };
 
