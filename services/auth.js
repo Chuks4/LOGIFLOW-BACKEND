@@ -40,7 +40,7 @@ const login = async (email, password, options = {}) => {
     throw error;
   }
 
-  const emailLower = email.trim().toLowerCase()
+  const emailLower = email.trim().toLowerCase();
   const { req, res } = options;
   const user = await userRepository.findByEmail(emailLower);
   if (!user) {
@@ -62,7 +62,14 @@ const login = async (email, password, options = {}) => {
     emailVerified: user.emailVerified,
     roleId: user.role?.id,
     userType: user.role?.name,
+    status: user.status,
   };
+
+  if (user.status === "suspended") {
+    const error = new Error("Your account has been suspended, Please contact support");
+    error.status = 401;
+    throw error;
+  }
 
   const accessToken = signAccessToken(payload);
   const jti = createJti();
@@ -219,10 +226,10 @@ const register = async (data) => {
     throw error;
   }
 
-  if(!role.isActive){
-    const error = new Error("Role is not activated yet")
-    error.status = 400
-    throw error
+  if (!role.isActive) {
+    const error = new Error("Role is not activated yet");
+    error.status = 400;
+    throw error;
   }
 
   const user = await userRepository.create({
@@ -366,7 +373,10 @@ const verifyEmail = async (token) => {
     throw error;
   }
 
-  await userRepository.update(existingToken.userId, { emailVerified: true });
+  await userRepository.update(existingToken.userId, {
+    emailVerified: true,
+    status: "active",
+  });
   await existingToken.update({ isUsed: true });
 
   const mailOption = {

@@ -6,6 +6,7 @@ const getCustomers = async (req, res) => {
     const customers = await userServices.getCustomers(req.query);
     res.status(200).json({ status: true, data: customers });
   } catch (error) {
+    console.log("Error", error)
     if (error.status) {
       return res
         .status(error.status)

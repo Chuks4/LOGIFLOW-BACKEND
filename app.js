@@ -92,6 +92,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Routes
+app.use("api/v1/uploads", express.static("./uploads"));
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/vehicles", vehicleRouter);
 app.use("/api/v1/users", userRouter);

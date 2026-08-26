@@ -24,6 +24,14 @@ const authAccess = (req, res, next) => {
         message: "Please verify your email to access this resource",
       });
     }
+
+    if (req.user.status === "suspended") {
+      return res.status(401).json({
+        status: false,
+        message: "Your account has been suspended, Please contact support",
+      });
+    }
+
     next();
   } catch (error) {
     if (error.name === "TokenExpiredError") {

@@ -2,7 +2,6 @@ const vehicleRepo = require("../repositories/vehicles");
 const { Op } = require("sequelize");
 const db = require("../models");
 const userRepo = require("../repositories/user");
-const user = require("../repositories/user");
 
 /**
  * Creates new vehicle
@@ -119,13 +118,19 @@ const assignDriver = async (id, driverId) => {
     throw error;
   }
 
+  if (!driver) {
+    const error = new Error("Driver not found");
+    error.status = 404;
+    throw error;
+  }
+
   if (vehicle.status !== "Available") {
     const error = new Error("Vehicle is not available");
     error.status = 400;
     throw error;
   }
 
-  if (!user || user.role?.name !== "Driver") {
+  if (driver.role?.name !== "driver") {
     const error = new Error("User is not a driver");
     error.status = 400;
     throw error;

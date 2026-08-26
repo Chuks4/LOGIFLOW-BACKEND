@@ -44,7 +44,8 @@ const validateCreateShipment = [
     .isIn(["standard", "express", "fragile"])
     .withMessage("Invalid shipment type"),
   body("estimatedCost")
-    .trim()
+    .notEmpty()
+    .withMessage("Estimated cost is required")
     .toInt()
     .isInt({ min: 1 })
     .withMessage("Estimated cost must be a positive integer"),
@@ -117,6 +118,8 @@ const validateCreateShipment = [
     .trim()
     .withMessage("Item category must be a string"),
   body("items.*.isFragile")
+    .notEmpty()
+    .withMessage("Item isFragile is required")
     .isBoolean()
     .withMessage("Item isFragile must be a boolean")
     .toBoolean(),

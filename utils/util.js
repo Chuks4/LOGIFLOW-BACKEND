@@ -68,9 +68,10 @@ const rotateRefreshToken = async (token, jti, user, options = {}) => {
     emailVerified: user.emailVerified,
     roleId: user.role?.id,
     userType: user.role?.name,
+    status: user.status,
   };
   const accessToken = signAccessToken(payload);
-  const refreshToken = signRefreshToken(payload, jti);
+  const refreshToken = signRefreshToken(payload, jti)
   await createRefreshToken({
     user,
     refreshToken,
@@ -125,7 +126,21 @@ const generateTrackingNumber = () => {
     const index = crypto.randomInt(0, characters.length);
     random += characters[index];
   }
-  return `LOGI-${random}`;
+  return `LOGI-FLOW-${random}`;
+};
+
+const trimData = (data) => {
+  if (typeof data !== "object" || data === null || Array.isArray(data)) {
+    return data;
+  }
+
+  const obj = {};
+
+  for (const [key, value] of Object.entries(data)) {
+    obj[key] = typeof value === "string" ? value.trim() : value;
+  }
+
+  return obj;
 };
 
 module.exports = {
@@ -140,4 +155,5 @@ module.exports = {
   isUserAtLeastEighteen,
   deleteFile,
   generateTrackingNumber,
+  trimData
 };

@@ -1,7 +1,7 @@
 const userRepository = require("../repositories/user");
 const { Op } = require("sequelize");
 const db = require("../models");
-const { deleteFile } = require("../utils/util");
+const { deleteFile, trimData } = require("../utils/util");
 
 /**
  * Get customers
@@ -11,15 +11,15 @@ const { deleteFile } = require("../utils/util");
 const getCustomers = async (query) => {
   const page = query.page ? parseInt(query.page) : 1;
   const limit = query.limit ? parseInt(query.limit) : 10;
-  const search = query.search ? query.search : "";
+  const search = query.search ? query.keyword : "";
   const offset = (page - 1) * limit;
   const filterByRoles = query.filterByRoles ? query.filterByRoles : "";
   const where = {};
 
   if (search) {
     where[Op.or] = [
-      { firstName: { [Op.like]: `%${search}%` } },
-      { lastName: { [Op.like]: `%${search}%` } },
+      { firstName: { [Op.iLike]: `%${search}%` } },
+      { lastName: { [Op.iLike]: `%${search}%` } },
     ];
   }
 
@@ -27,11 +27,12 @@ const getCustomers = async (query) => {
     where,
     include: {
       model: db.roles,
+      as: "role",
       where: {
-        name: filterByRoles ? filterByRoles : { [Op.ne]: "super-admin" },
+        name: filterByRoles ? filterByRoles : { [Op.ne]: "super_admin" },
       },
       required: true,
-      attributes: [],
+      attributes: ["name"],
     },
     offset,
     limit,
@@ -94,7 +95,7 @@ const updateUser = async (id, data, file) => {
     state,
     city,
     address,
-  } = data;
+  } = trimData(data);
 
   if (dob && !isUserAtLeastEighteen(dob)) {
     const error = new Error("User must be at least 18 years old");
@@ -112,6 +113,7 @@ const updateUser = async (id, data, file) => {
     country: country || user?.country,
     state: state || user?.state,
     city: city || user?.city,
+    address: address || user?.address,
   });
 
   return userRepository.findById(id);

@@ -119,7 +119,7 @@ const updateStatus = async (userId, shipmentId, status) => {
 
 const assignDriverShipment = async (dispatcherId, shipmentId, driverId) => {
   return await db.sequelize.transaction(async (transaction) => {
-    const driver = await userRepository.findById(driverId);
+    const driver = await userRepository.findById(driverId, { transaction });
     if (!driver) {
       const error = new Error("Driver not found");
       error.status = 404;
@@ -128,6 +128,7 @@ const assignDriverShipment = async (dispatcherId, shipmentId, driverId) => {
 
     const dispatcher = await userRepository.findById(dispatcherId, {
       include: { model: db.roles, as: "role", attributes: ["name"] },
+      transaction,
     });
     if (!dispatcher) {
       const error = new Error("Dispatcher not found");
@@ -136,14 +137,19 @@ const assignDriverShipment = async (dispatcherId, shipmentId, driverId) => {
     }
 
     const updatedBy = dispatcher.role?.name;
-    const shipment = await shipmentRepository.findById(shipmentId);
+    const shipment = await shipmentRepository.findById(shipmentId, {
+      transaction,
+    });
     if (!shipment) {
       const error = new Error("Shipment not found");
       error.status = 404;
       throw error;
     }
 
-    await shipment.update({ driverId, dispatcherId, status: "Assigned" });
+    await shipment.update(
+      { driverId, dispatcherId, status: "Assigned" },
+      { transaction },
+    );
     await recordStatusHistory(shipmentId, "Assigned", {
       updatedBy,
       transaction,
@@ -260,7 +266,7 @@ const getAll = async (query) => {
   const driverId = query.driverId ? query.driverId : "";
   const dispatcherId = query.dispatcherId ? query.dispatcherId : "";
 
-  const where = {}
+  const where = {};
 
   if (keyword) {
     where[Op.or] = [
