@@ -51,8 +51,10 @@ db.vehicles = require("./vehicles")(DataTypes, sequelize);
 db.tokens = require("./tokens")(DataTypes, sequelize);
 db.permissions = require("./permissions")(DataTypes, sequelize);
 db.role_permission = require("./role_permissions")(DataTypes, sequelize);
+db.payments = require("./payments")(DataTypes, sequelize);
 
 // RelationShips
+
 // User and RefreshToken
 db.users.hasMany(db.refreshToken, {
   foreignKey: "userId",
@@ -153,6 +155,26 @@ db.permissions.belongsToMany(db.roles, {
   foreignKey: "permissionId",
   otherKey: "roleId",
   as: "roles",
+});
+
+// User and Payment
+db.users.hasMany(db.payments, {
+  foreignKey: "userId",
+  as: "payments",
+});
+db.payments.belongsTo(db.users, {
+  foreignKey: "userId",
+  as: "user",
+});
+
+// Shipment and Payment
+db.shipments.hasMany(db.payments, {
+  foreignKey: "shipmentId",
+  as: "payments",
+});
+db.payments.belongsTo(db.shipments, {
+  foreignKey: "shipmentId",
+  as: "shipment",
 });
 
 // Sync the models with the database
