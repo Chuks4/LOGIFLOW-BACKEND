@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const userController = require("../controllers/users");
-const authAccess = require("../middlewares/authAccess");
+const {authAccess} = require("../middlewares/authAccess");
 const handleUpload = require("../middlewares/uploads");
 
 /**
@@ -22,7 +22,7 @@ const handleUpload = require("../middlewares/uploads");
  *           type: string
  * 
  *       - in: query
- *         name: status
+ *         name: filterByRoles
  *         description: Filter by role role (customer:customer, driver:driver)
  *         required: false
  *         schema:
@@ -59,16 +59,15 @@ const handleUpload = require("../middlewares/uploads");
  *       500:
  *         description: Internal server error
  */
-
 router.get("/", authAccess, userController.getCustomers);
 
 /**
  * @swagger
  * /api/v1/users/{id}:
  *   get:
- *     summary: Get a role by ID
+ *     summary: Get a user by ID
  *     tags:
- *       - Roles
+ *       - Users
  *     security:
  *       - BearerAuth: []
  *     parameters:
@@ -93,8 +92,8 @@ router.get("/", authAccess, userController.getCustomers);
  *       500:
  *         description: Internal server error
  */
-
 router.get("/:id", authAccess, userController.getById);
+
 /**
  * @swagger
  * /api/v1/users/{id}:
@@ -152,7 +151,6 @@ router.get("/:id", authAccess, userController.getById);
  *                 example: Nigeria
  *               image:
  *                 type: string
- *                 format: binary
  *                 description: Profile image to upload
  *     responses:
  *       200:
@@ -189,6 +187,7 @@ router.get("/:id", authAccess, userController.getById);
  *         description: Internal server error
  */
 router.put("/:id", authAccess, handleUpload, userController.update);
+
 /**
  * @swagger
  * /api/v1/users/{id}/status:

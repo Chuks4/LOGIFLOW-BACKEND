@@ -1,7 +1,7 @@
 const vehicleController = require("../controllers/vehicle");
 const router = require("express").Router();
 const { validateCreateVehicle } = require("../validators/vehicles");
-const authAccess = require("../middlewares/authAccess");
+const { authAccess } = require("../middlewares/authAccess");
 
 /**
  * @swagger

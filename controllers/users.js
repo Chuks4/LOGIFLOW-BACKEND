@@ -6,7 +6,7 @@ const getCustomers = async (req, res) => {
     const customers = await userServices.getCustomers(req.query);
     res.status(200).json({ status: true, data: customers });
   } catch (error) {
-    console.log("Error", error)
+    console.log("Error", error);
     if (error.status) {
       return res
         .status(error.status)
@@ -60,8 +60,10 @@ const update = async (req, res) => {
 
 const updateStatus = async (req, res) => {
   try {
-    const user = await userServices.updateUserStatus(req.params, req.body);
+    const user = await userServices.updateUserStatus(req.params.id, req.body.status);
+    return res.status(200).json({status: true, data: user})
   } catch (error) {
+    console.log("Error ", error);
     if (error.status) {
       return res
         .status(error.status)

@@ -66,7 +66,9 @@ const login = async (email, password, options = {}) => {
   };
 
   if (user.status === "suspended") {
-    const error = new Error("Your account has been suspended, Please contact support");
+    const error = new Error(
+      "Your account has been suspended, Please contact support",
+    );
     error.status = 401;
     throw error;
   }
@@ -130,6 +132,7 @@ const refreshToken = async (options = {}) => {
   }
 
   if (existing.expiresAt < new Date()) {
+    await logout(options);
     const error = new Error("Refresh token has expired");
     error.status = 401;
     throw error;

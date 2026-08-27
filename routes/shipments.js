@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const shipmentController = require("../controllers/shipments");
-const authAccess = require("../middlewares/authAccess");
+const {authAccess} = require("../middlewares/authAccess");
 const { validateCreateShipment } = require("../validators/shipments");
 
 /**

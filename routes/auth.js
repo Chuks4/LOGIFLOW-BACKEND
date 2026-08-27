@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const authController = require("../controllers/auth");
-const authAccess = require("../middlewares/authAccess");
+const {authAccess, authRefresh} = require("../middlewares/authAccess");
 
 const {
   validateLogin,
@@ -68,7 +68,8 @@ router.post("/login", validateLogin, authController.login);
  *     description: Generates a new access token using the refresh token stored in the HTTP cookie.
  *     tags:
  *       - Auth
- *     security: []
+ *     security: 
+ *        - BearerAuth: []
  *     responses:
  *       200:
  *         description: Access token refreshed successfully
@@ -77,7 +78,7 @@ router.post("/login", validateLogin, authController.login);
  *       500:
  *         description: Internal server error
  */
-router.post("/refresh-token", authAccess, authController.refreshToken);
+router.post("/refresh-token", authRefresh, authController.refreshToken);
 
 /**
  * @swagger

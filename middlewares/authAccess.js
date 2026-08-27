@@ -5,8 +5,8 @@ const refreshKey = process.env.JWT_REFRESH_SECRET_KEY;
 const authAccess = (req, res, next) => {
   const header = req.headers.authorization || "";
   const [scheme, headerToken] = header.split(" ");
-  const cookiesToken = req.cookies?.refresh_token;
-  const token = scheme === "Bearer" && headerToken ? headerToken : cookiesToken;
+  const token = scheme === "Bearer" && headerToken;
+
   if (!token) {
     return res
       .status(401)
@@ -14,8 +14,7 @@ const authAccess = (req, res, next) => {
   }
 
   try {
-    const key = headerToken ? privateKey : refreshKey;
-    const decoded = jwt.verify(token, key);
+    const decoded = jwt.verify(token, privateKey);
     req.user = decoded;
 
     if (!req.user.emailVerified && !req.path.includes("/verify-email")) {
@@ -50,4 +49,49 @@ const authAccess = (req, res, next) => {
   }
 };
 
-module.exports = authAccess;
+const authRefresh = (req, res, next) => {
+  const token = req.cookies?.refresh_token; // get refresh token from cookie
+  if (!token) {
+    return res
+      .status(401)
+      .json({ status: false, message: "No token provided" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, refreshKey);
+    req.user = decoded;
+
+    if (!req.user.emailVerified && !req.path.includes("/verify-email")) {
+      return res.status(401).json({
+        status: false,
+        message: "Please verify your email to access this resource",
+      });
+    }
+
+    if (req.user.status === "suspended") {
+      return res.status(401).json({
+        status: false,
+        message: "Your account has been suspended, Please contact support",
+      });
+    }
+
+    next();
+  } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({
+        message: "Token expired",
+      });
+    } else if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({
+        message: "Invalid token",
+      });
+    } else {
+      return res.status(401).json({
+        message: error,
+      });
+    }
+  }
+};
+
+module.exports = {authAccess, authRefresh};
+

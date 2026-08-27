@@ -1,7 +1,11 @@
 const userRepository = require("../repositories/user");
 const { Op } = require("sequelize");
 const db = require("../models");
-const { deleteFile, trimData } = require("../utils/util");
+const {
+  deleteFile,
+  trimData,
+  isUserAtLeastEighteen,
+} = require("../utils/util");
 
 /**
  * Get customers
@@ -58,7 +62,13 @@ const getUserById = async (id) => {
     error.statusCode = 400;
     throw error;
   }
-  const user = await userRepository.findById(id);
+  const user = await userRepository.findById(id, {
+    include: {
+      model: db.roles,
+      as: "role",
+      attributes: ["name"],
+    },
+  });
   if (!user) {
     const error = new Error("User not found");
     error.statusCode = 404;
@@ -130,6 +140,13 @@ const updateUserStatus = async (id, status) => {
   if (!user) {
     const error = new Error("User not found");
     error.statusCode = 404;
+    throw error;
+  }
+
+  const ALLOWED_STATUSES = ["active", "suspended"];
+  if (!ALLOWED_STATUSES.includes(status)) {
+    const error = new Error("Status can only be active or suspended");
+    error.status = 400;
     throw error;
   }
 

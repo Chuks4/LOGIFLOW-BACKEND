@@ -77,6 +77,10 @@ const swaggerOptions = {
         name: "Geoapify",
         description: "Geoapify related APIs",
       },
+      {
+        name: "Users",
+        description: "Users related APIs",
+      },
     ],
   },
 
