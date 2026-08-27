@@ -51,7 +51,7 @@ db.vehicles = require("./vehicles")(DataTypes, sequelize);
 db.tokens = require("./tokens")(DataTypes, sequelize);
 db.permissions = require("./permissions")(DataTypes, sequelize);
 db.role_permission = require("./role_permissions")(DataTypes, sequelize);
-db.payments = require("./payments")(DataTypes, sequelize);
+db.payments = require("./payment")(DataTypes, sequelize);
 
 // RelationShips
 

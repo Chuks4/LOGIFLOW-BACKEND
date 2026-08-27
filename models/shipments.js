@@ -83,6 +83,7 @@ module.exports = (DataTypes, sequelize) => {
         "Delivered",
         "Returned",
         "Cancelled",
+        "Confirmed"
       ),
       defaultValue: "Pending",
       allowNull: false,

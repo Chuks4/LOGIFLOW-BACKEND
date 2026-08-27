@@ -8,6 +8,7 @@ const shipmentRouter = require("./routes/shipments");
 const geoapifyRouter = require("./routes/geoapify");
 const permissionRouter = require("./routes/permissions");
 const roleRouter = require("./routes/roles");
+const paymentRouter = require("./routes/payments");
 
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdocs = require("swagger-jsdoc");
@@ -81,6 +82,10 @@ const swaggerOptions = {
         name: "Users",
         description: "Users related APIs",
       },
+      {
+        name: "Payments",
+        description: "Payment related APIs",
+      },
     ],
   },
 
@@ -104,5 +109,6 @@ app.use("/api/v1/shipments", shipmentRouter);
 app.use("/api/v1/geoapify", geoapifyRouter);
 app.use("/api/v1/permissions", permissionRouter);
 app.use("/api/v1/roles", roleRouter);
+app.use("/api/v1/payments", paymentRouter);
 
 module.exports = app;

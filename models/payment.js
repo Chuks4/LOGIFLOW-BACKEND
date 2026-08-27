@@ -53,6 +53,9 @@ module.exports = (DataTypes, sequelize) => {
       paidAt: {
         type: DataTypes.DATE,
       },
+      metadata: {
+        type: DataTypes.JSON
+      }
     },
     {
       indexes: [
@@ -62,6 +65,9 @@ module.exports = (DataTypes, sequelize) => {
         {
           fields: ["shipmentId"],
         },
+        {
+          fields: ["reference"],
+        }
       ],
     },
   );
