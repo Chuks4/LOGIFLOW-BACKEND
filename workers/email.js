@@ -28,6 +28,11 @@ const emailWorker = new Worker(
   {
     connection,
     concurrency: 5,
+    removeOnComplete: {
+      age: 2592000, // Remove completed jobs after 30 days
+      count: 100, // Keep up to 100 completed jobs
+      limit: 50, // Limit the number of jobs to remove at once
+    }
   },
 );
 

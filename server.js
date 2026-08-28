@@ -4,6 +4,7 @@ const http = require("http");
 const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
 require("./workers/email"); // Start the email worker
+require("./workers/payment"); // Start the payment worker
 const { logger } = require("./logger/logger");
 const fs = require("fs");
 

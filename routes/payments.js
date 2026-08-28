@@ -73,4 +73,6 @@ const { authAccess } = require("../middlewares/authAccess");
  *         description: Internal server error
  */
 router.post("/initialize", authAccess, paymentController.initPayment);
-module.exports = router
+router.post("/webhook", paymentController.processPaymentWebhooks);
+
+module.exports = router;

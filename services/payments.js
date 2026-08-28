@@ -55,6 +55,7 @@ const initPayment = async (data) => {
       amount: parsedAmount,
       shipmentId: shipment.id,
       reference,
+      email,
     };
 
     if (!secretKey) {
@@ -107,11 +108,11 @@ const initPayment = async (data) => {
 const handlePaymentSuccess = async (data) => {
   return db.sequelize.transaction(async (transaction) => {
     const { metadata, paid_at, channel, currency } = data;
-    const { reference, shipmentId } = metadata;
+    const { reference, shipmentId, email } = metadata;
     const payment = await paymentRepo.findOne({
       where: { reference },
       transaction,
-      lock: true,
+      lock: transaction.LOCK.UPDATE,
     });
     if (!payment) {
       const error = new Error("Payment not found");
@@ -127,11 +128,18 @@ const handlePaymentSuccess = async (data) => {
 
     const shipment = await shipmentRepo.findById(shipmentId, {
       transaction,
-      lock: true,
+      lock: transaction.LOCK.UPDATE,
     });
+
     if (!shipment) {
       const error = new Error("Shipment not found");
       error.status = 404;
+      throw error;
+    }
+
+    if (shipment.status === "Confirmed") {
+      const error = new Error("Shipment already confirmed");
+      error.status = 400;
       throw error;
     }
 
@@ -145,6 +153,8 @@ const handlePaymentSuccess = async (data) => {
       { transaction },
     );
     await shipment.update({ status: "Confirmed" }, { transaction });
+
+    // TODO Enqueue email to be sent to the user
 
     return {
       status: "success",
@@ -160,7 +170,7 @@ const handlePaymentFailure = async (data) => {
     const payment = await paymentRepo.findOne({
       where: { reference },
       transaction,
-      lock: true,
+      lock: transaction.LOCK.UPDATE,
     });
     if (!payment) {
       const error = new Error("Payment not found");
@@ -168,7 +178,7 @@ const handlePaymentFailure = async (data) => {
       throw error;
     }
 
-    if (payment.status === "completed") {
+    if (payment.status === "failed") {
       const error = new Error("Payment already processed");
       error.status = 400;
       throw error;
@@ -176,7 +186,7 @@ const handlePaymentFailure = async (data) => {
 
     const shipment = await shipmentRepo.findById(shipmentId, {
       transaction,
-      lock: true,
+      lock: transaction.LOCK.UPDATE,
     });
     if (!shipment) {
       const error = new Error("Shipment not found");
@@ -184,12 +194,9 @@ const handlePaymentFailure = async (data) => {
       throw error;
     }
 
-    await payment.update(
-      {
-        status: "failed",
-      },
-      { transaction },
-    );
+    await payment.update({ status: "failed" }, { transaction });
+
+    // TODO Enqueue email to be sent to the user
 
     return {
       status: "failed",
