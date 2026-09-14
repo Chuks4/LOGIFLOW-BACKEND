@@ -280,7 +280,7 @@ router.put("/:id", authAccess, shipmentController.updateStatus);
 /**
  * @swagger
  * /api/v1/shipments/{shipmentId}/{driverId}/assign-driver:
- *   put:
+ *   patch:
  *     summary: Assign a driver to a shipment
  *     description: Assign a driver to a shipment by its unique ID
  *     tags:
