@@ -7,7 +7,8 @@ const { enqueuePaymentWebhook } = require("../queues/payments");
 
 const initPayment = async (req, res) => {
   try {
-    const { amount, shipmentId, email } = req.body;
+    const { email } = req.user;
+    const { amount, shipmentId } = req.body;
     const data = await paymentService.initPayment({
       amount,
       shipmentId,
@@ -15,6 +16,7 @@ const initPayment = async (req, res) => {
     });
     return res.status(200).json({ status: true, data });
   } catch (error) {
+    console.log("Error", error);
     if (error.status) {
       return res
         .status(error.status)
@@ -29,6 +31,7 @@ const initPayment = async (req, res) => {
 
 const processPaymentWebhooks = async (req, res) => {
   try {
+    console.log("Webhook received:", req.body);
     const body = req.body;
     const reference = body.data.reference;
     const eventType = body.event;
@@ -46,12 +49,12 @@ const processPaymentWebhooks = async (req, res) => {
       eventType,
     });
 
-    if (!created) {
+    if (created) {
+      // Enqueue payment webhook
+      await enqueuePaymentWebhook(parsedBody);
       return res.send(200);
     }
 
-    // Enqueue payment webhook
-    await enqueuePaymentWebhook(parsedBody);
     return res.send(200);
   } catch (error) {
     if (error.status) {

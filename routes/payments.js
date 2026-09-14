@@ -4,7 +4,7 @@ const { authAccess } = require("../middlewares/authAccess");
 
 /**
  * @swagger
- * /api/payments:
+ * /api/v1/payments/initialize:
  *   post:
  *     summary: Initialize payment
  *     description: Initialize a payment for a shipment.

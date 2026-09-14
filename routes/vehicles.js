@@ -12,7 +12,7 @@ const { authAccess } = require("../middlewares/authAccess");
  *     tags:
  *       - Vehicles
  *     security:
- *       - bearerAuth: []
+ *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -104,7 +104,7 @@ router.post("/", authAccess, validateCreateVehicle, vehicleController.create);
  *     tags:
  *       - Vehicles
  *     security:
- *       - bearerAuth: []
+ *       - BearerAuth: []
  *     parameters:
  *       - in: query
  *         name: page
@@ -206,7 +206,7 @@ router.get("/", authAccess, vehicleController.getAll);
  *     tags:
  *       - Vehicles
  *     security:
- *       - bearerAuth: []
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -283,7 +283,7 @@ router.get("/:id", authAccess, vehicleController.getById);
  *     tags:
  *       - Vehicles
  *     security:
- *       - bearerAuth: []
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -384,7 +384,7 @@ router.put("/:id", authAccess, vehicleController.update);
  *     tags:
  *       - Vehicles
  *     security:
- *       - bearerAuth: []
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -470,7 +470,7 @@ router.patch("/:id/driver", authAccess, vehicleController.assignDriver);
  *     tags:
  *       - Vehicles
  *     security:
- *       - bearerAuth: []
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id

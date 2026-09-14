@@ -121,7 +121,7 @@ const deleteFile = (path) => {
 
 const generateTrackingNumber = () => {
   const characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  const random = "";
+  let random = "";
   for (let i = 0; i < 8; i++) {
     const index = crypto.randomInt(0, characters.length);
     random += characters[index];

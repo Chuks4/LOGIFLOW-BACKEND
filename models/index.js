@@ -53,6 +53,7 @@ db.permissions = require("./permissions")(DataTypes, sequelize);
 db.role_permission = require("./role_permissions")(DataTypes, sequelize);
 db.payments = require("./payment")(DataTypes, sequelize);
 db.webhookEvents = require("./webhookEvent")(DataTypes, sequelize);
+db.shipmentLocations = require("./shipmentLocation")(DataTypes, sequelize);
 
 // RelationShips
 
@@ -177,6 +178,27 @@ db.payments.belongsTo(db.shipments, {
   foreignKey: "shipmentId",
   as: "shipment",
 });
+
+// Shipments and ShipmentLocations
+db.shipments.hasMany(db.shipmentLocations, {
+  foreignKey: "shipmentId",
+  as: "locations",
+})
+db.shipmentLocations.belongsTo(db.shipments, {
+  foreignKey: "shipmentId",
+  as: "shipment",
+})
+
+// Driver and ShipmentLocations
+db.users.hasMany(db.shipmentLocations, {
+  foreignKey: "driverId",
+  as: "driverLocations",
+})
+db.shipmentLocations.belongsTo(db.users, {
+  foreignKey: "driverId",
+  as: "driver",
+})
+
 
 // Sync the models with the database
 sequelize

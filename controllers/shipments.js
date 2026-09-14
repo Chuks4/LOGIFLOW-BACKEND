@@ -2,7 +2,7 @@ const shipmentService = require("../services/shipments");
 
 const create = async (req, res) => {
   try {
-    const shipment = await shipmentService.create(req.body);
+    const shipment = await shipmentService.create(req.body, req.user.id);
     return res.status(201).json({ status: true, data: shipment });
   } catch (error) {
     if (error.status) {
@@ -19,9 +19,10 @@ const create = async (req, res) => {
 
 const getAll = async (req, res) => {
   try {
-    const shipments = await shipmentService.getAll();
+    const shipments = await shipmentService.getAll(req.query);
     return res.status(200).json({ status: true, data: shipments });
   } catch (error) {
+      console.log("Error", error);
     if (error.status) {
       return res
         .status(error.status)

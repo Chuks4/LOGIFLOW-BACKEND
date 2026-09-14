@@ -60,11 +60,11 @@ module.exports = (DataTypes, sequelize) => {
     },
     weight: {
       type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
+      allowNull: true,
     },
     dimensions: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     shipmentType: {
       type: DataTypes.STRING,

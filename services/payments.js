@@ -12,7 +12,7 @@ const db = require("../models");
 
 const createReference = () => {
   // Generate a unique reference for the payment
-  const reference = Date().now();
+  const reference = Date.now();
   const rand = Math.floor(Math.random() * 1000000);
   return `TXN-LOGIFLOW-${reference}-${rand}`;
 };
@@ -52,7 +52,7 @@ const initPayment = async (data) => {
     const currency = "NGN";
     const metadata = {
       customerId: user.id,
-      amount: parsedAmount,
+      amount,
       shipmentId: shipment.id,
       reference,
       email,
@@ -66,8 +66,7 @@ const initPayment = async (data) => {
 
     // Paystack Payment Initialization API Call
     const { data } = await axios.post(
-      `${payment_baseUrl}/
-/transaction/initialize`,
+      `${payment_baseUrl}/transaction/initialize`,
       {
         email,
         amount: parsedAmount,
@@ -92,6 +91,7 @@ const initPayment = async (data) => {
         metadata: JSON.stringify(metadata),
         shipmentId,
         userId: user.id,
+        paymentMethod: "card"
       });
     }
 
@@ -99,6 +99,7 @@ const initPayment = async (data) => {
       status: data.status,
       message: data.message,
       url: data.data.authorization_url,
+      access_code: data.data.access_code,
     };
   } catch (error) {
     throw error;
@@ -134,12 +135,6 @@ const handlePaymentSuccess = async (data) => {
     if (!shipment) {
       const error = new Error("Shipment not found");
       error.status = 404;
-      throw error;
-    }
-
-    if (shipment.status === "Confirmed") {
-      const error = new Error("Shipment already confirmed");
-      error.status = 400;
       throw error;
     }
 

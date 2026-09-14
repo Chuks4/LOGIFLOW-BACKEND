@@ -59,7 +59,7 @@ const handleUpload = require("../middlewares/uploads");
  *       500:
  *         description: Internal server error
  */
-router.get("/", authAccess, userController.getCustomers);
+router.get("/",  userController.getCustomers);
 
 /**
  * @swagger

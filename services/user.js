@@ -38,6 +38,7 @@ const getCustomers = async (query) => {
       required: true,
       attributes: ["name"],
     },
+    attributes: { exclude: ["password"] },
     offset,
     limit,
     order: [["createdAt", "DESC"]],
@@ -63,6 +64,7 @@ const getUserById = async (id) => {
     throw error;
   }
   const user = await userRepository.findById(id, {
+    attributes: { exclude: ["password"] },
     include: {
       model: db.roles,
       as: "role",
@@ -126,7 +128,14 @@ const updateUser = async (id, data, file) => {
     address: address || user?.address,
   });
 
-  return userRepository.findById(id);
+  return userRepository.findById(id, {
+    attributes: { exclude: ["password"] },
+    include: {
+      model: db.roles,
+      as: "role",
+      attributes: ["name"],
+    },
+  });
 };
 
 /**
@@ -154,7 +163,14 @@ const updateUserStatus = async (id, status) => {
     status,
   });
 
-  return userRepository.findById(id);
+  return userRepository.findById(id, {
+    attributes: { exclude: ["password"] },
+    include: {
+      model: db.roles,
+      as: "role",
+      attributes: ["name"],
+    },
+  });
 };
 
 module.exports = {

@@ -12,7 +12,7 @@ const { validateCreateShipment } = require("../validators/shipments");
  *     tags:
  *       - Shipments
  *     security:
- *       - bearerAuth: []
+ *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -126,7 +126,7 @@ router.post("/", authAccess, validateCreateShipment, shipmentController.create);
  *     tags:
  *       - Shipments
  *     security:
- *       - bearerAuth: []
+ *       - BearerAuth: []
  *     parameters:
  *       - in: query
  *         name: page
@@ -202,7 +202,7 @@ router.get("/", authAccess, shipmentController.getAll);
  *     tags:
  *       - Shipments
  *     security:
- *       - bearerAuth: []
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -233,7 +233,7 @@ router.get("/:id", authAccess, shipmentController.getById);
  *     tags:
  *       - Shipments
  *     security:
- *       - bearerAuth: []
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -286,7 +286,7 @@ router.put("/:id", authAccess, shipmentController.updateStatus);
  *     tags:
  *       - Shipments
  *     security:
- *       - bearerAuth: []
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: shipmentId

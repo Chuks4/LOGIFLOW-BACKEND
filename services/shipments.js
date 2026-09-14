@@ -158,10 +158,9 @@ const assignDriverShipment = async (dispatcherId, shipmentId, driverId) => {
   });
 };
 
-const create = async (data) => {
+const create = async (data, customerId) => {
   return await db.sequelize.transaction(async (transaction) => {
     const {
-      customerId,
       pickupAddress,
       deliveryAddress,
       pickupLatitude,
@@ -214,8 +213,8 @@ const create = async (data) => {
     }
 
     const trackingNumber = generateTrackingNumber();
-    const shipment = shipmentRepository.create(
-      { ...data, trackingNumber },
+    const shipment = await shipmentRepository.create(
+      { ...data, trackingNumber, customerId },
       { transaction },
     );
     await recordStatusHistory(shipment.id, "Pending", {
@@ -246,7 +245,7 @@ const create = async (data) => {
     return await shipmentRepository.findById(shipment.id, {
       include: [
         {
-          model: db.shipments_items,
+          model: db.shipment_items,
           as: "items",
           required: true,
         },
@@ -279,7 +278,7 @@ const getAll = async (query) => {
     where.dispatcherId = dispatcherId;
   } else if (driverId) {
     where.driverId = driverId;
-  } else {
+  } else if (customerId) {
     where.customerId = customerId;
   }
 
@@ -289,7 +288,7 @@ const getAll = async (query) => {
 
   const { rows, count } = await shipmentRepository.findAndCountAll({
     where: { ...where },
-    include: { model: db.shipments_items, as: "items", required: true },
+    include: { model: db.shipment_items, as: "items", required: true },
     offset,
     limit,
     order: [["createdAt", "DESC"]],
@@ -297,8 +296,8 @@ const getAll = async (query) => {
 
   return {
     totalItems: count,
-    data: rows,
     totalPages: Math.ceil(count / limit),
+    data: rows,
   };
 };
 

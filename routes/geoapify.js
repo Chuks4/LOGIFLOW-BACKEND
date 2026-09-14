@@ -10,7 +10,7 @@ const { validateCalculateShipmentCost } = require("../validators/geoapify");
  *    summary: Calculate shipment cost
  *    tags: [Geoapify]
  *    security:
- *      - bearerAuth: []
+ *      - BearerAuth: []
  *    requestBody:
  *      required: true
  *      content:
