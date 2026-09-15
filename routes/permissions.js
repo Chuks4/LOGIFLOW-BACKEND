@@ -215,8 +215,7 @@ router.delete("/:id", authAccess, permsController.remove);
  *     description: Retrieve all permissions assigned to a specific role by its ID.
  *     tags:
  *       - Permissions
- *     security:
- *       - BearerAuth: []
+ *     security: []
  *     parameters:
  *       - in: path
  *         name: roleId
@@ -253,6 +252,6 @@ router.delete("/:id", authAccess, permsController.remove);
  *       '500':
  *         description: Internal server error
  */
-router.get("/role/:roleId", authAccess, permsController.geAllByRoleId);
+router.get("/role/:roleId", permsController.geAllByRoleId);
 
 module.exports = router;

@@ -220,7 +220,8 @@ const register = async (data) => {
   }
 
   const role = roleId
-    ? await roleRepository.findById(roleId)
+    ? (await roleRepository.findById(roleId)) ||
+      (await roleRepository.findOne({ where: { name: roleId.toLowerCase() } }))
     : await roleRepository.findOne({ where: { name: "customer" } });
 
   if (!role) {

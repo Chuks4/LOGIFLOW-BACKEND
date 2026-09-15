@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const authController = require("../controllers/auth");
-const {authAccess, authRefresh} = require("../middlewares/authAccess");
+const {authRefresh} = require("../middlewares/authAccess");
 
 const {
   validateLogin,

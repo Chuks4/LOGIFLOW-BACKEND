@@ -112,7 +112,7 @@ router.post(
  *       500:
  *         description: Internal server error
  */
-router.get("/", authAccess, rolesController.getAll);
+router.get("/", rolesController.getAll);
 
 /**
  * @swagger
