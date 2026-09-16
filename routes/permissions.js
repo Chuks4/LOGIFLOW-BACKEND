@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const {authAccess} = require("../middlewares/authAccess");
+const { authAccess } = require("../middlewares/authAccess");
 const permsController = require("../controllers/permissions");
 const { validatePermission } = require("../validators/rbac");
 
@@ -253,5 +253,66 @@ router.delete("/:id", authAccess, permsController.remove);
  *         description: Internal server error
  */
 router.get("/role/:roleId", permsController.geAllByRoleId);
+
+/**
+ * @swagger
+ * /api/v1/permissions:
+ *   get:
+ *     summary: Get all permissions
+ *     description: Get all permissions
+ *     tags:
+ *       - Permissions
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: keyword
+ *         description: The keyword to search for
+ *         required: false
+ *         schema:
+ *           type: string
+ *           example: admin
+ *
+ *       - in: query
+ *         name: status
+ *         description: Filter by role status (true:active, false:inactive)
+ *         required: false
+ *         schema:
+ *           type: boolean
+ *           example: true
+ *
+ *       - in: query
+ *         name: limit
+ *         description: The number of records to return
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           example: 10
+ *
+ *       - in: query
+ *         name: page
+ *         description: The page number to return
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           example: 1
+ *
+ *     responses:
+ *       200:
+ *         description: Permissions retrieved successfully
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/", permsController.getAll);
 
 module.exports = router;

@@ -13,9 +13,9 @@ const ALLOWED_ACTIONS = Object.freeze({
 });
 
 const ALLOWED_RESOURCES = Object.freeze({
-  user: "user",
-  role: "role",
-  permission: "permission",
+  users: "users",
+  roles: "roles",
+  permissions: "permissions",
   shipments: "shipments",
   vehicles: "vehicles",
   drivers: "drivers",

@@ -27,6 +27,7 @@ const assignPermissions = async (roleId, permissionIds) => {
       await rolePermRepo.create({ roleId, permissionId });
     }
   }
+  
   return await roleRepo.findById(roleId, {
     include: {
       model: db.permissions,

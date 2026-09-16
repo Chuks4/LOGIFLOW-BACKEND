@@ -1,5 +1,6 @@
 const permsRepo = require("../repositories/permissions");
 const { ALLOWED_ACTIONS, ALLOWED_RESOURCES } = require("../constants/rbac");
+const { Op } = require("sequelize");
 
 /**
  * Create a permission
@@ -95,8 +96,38 @@ const remove = async (id) => {
   return id;
 };
 
+const getAll = async (params) => {
+  const page = params.page ? parseInt(params.page) : 1;
+  const limit = params.limit ? parseInt(params.limit) : 10;
+  const offset = (page - 1) * limit;
+  const status = params.status ? params.status : "all";
+  const query = status === "all" ? {} : { isActive: status };
+  const keyword = params.keyword ? params.keyword : "";
+
+  if (keyword) {
+    query[Op.or] = [
+      { name: { $like: `%${keyword}%` } },
+      { desc: { $like: `%${keyword}%` } },
+    ];
+  }
+
+  const { count, rows } = await permsRepo.findAndCountAll({
+    where: query,
+    offset,
+    limit,
+    order: [["createdAt", "DESC"]],
+  });
+
+  return {
+    totalPages: Math.ceil(count / limit),
+    totalItems: count,
+    data: rows,
+  };
+};
+
 module.exports = {
   create,
   update,
   remove,
+  getAll,
 };

@@ -23,7 +23,6 @@ const update = async (req, res) => {
     const updated = await permService.update(req.params.id, req.body);
     return res.status(200).json({ status: true, data: updated });
   } catch (error) {
-    console.log("Error", error);
     if (error.status) {
       return res
         .status(error.status)
@@ -58,7 +57,24 @@ const geAllByRoleId = async (req, res) => {
     const permissions = await getPermissionsByRoleId(req.params.roleId);
     return res.status(200).json({ status: true, data: permissions });
   } catch (error) {
-    console.log("Error", error);
+    if (error.status) {
+      return res
+        .status(error.status)
+        .json({ status: false, message: error.message });
+    }
+
+    return res
+      .status(500)
+      .json({ status: false, message: "Internal server error" });
+  }
+};
+
+const getAll = async (req, res) => {
+  try {
+    const permissions = await permService.getAll(req.query);
+    return res.status(200).json({ status: true, data: permissions });
+  } catch (error) {
+    console.log("Error", error)
     if (error.status) {
       return res
         .status(error.status)
@@ -76,4 +92,5 @@ module.exports = {
   update,
   remove,
   geAllByRoleId,
+  getAll
 };
