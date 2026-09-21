@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const { isEmailValid } = require("../utils/util");
 const axios = require("axios");
 const paymentRepo = require("../repositories/payments");
@@ -9,6 +10,11 @@ const {
 const userRepo = require("../repositories/user");
 const shipmentRepo = require("../repositories/shipments");
 const db = require("../models");
+const { recordStatusHistory } = require("./shipments");
+const { enqueuePaymentUpdateMail } = require("../queues/email");
+const {
+  paymentStatusMail,
+} = require("../utils/emailTemplates/paymentStatusMail");
 
 const createReference = () => {
   // Generate a unique reference for the payment
@@ -73,7 +79,7 @@ const initPayment = async (data) => {
         currency,
         reference,
         metadata,
-        callback_url,
+        // callback_url,
       },
       {
         headers: {
@@ -91,7 +97,7 @@ const initPayment = async (data) => {
         metadata: JSON.stringify(metadata),
         shipmentId,
         userId: user.id,
-        paymentMethod: "card"
+        paymentMethod: "card",
       });
     }
 
@@ -108,8 +114,9 @@ const initPayment = async (data) => {
 
 const handlePaymentSuccess = async (data) => {
   return db.sequelize.transaction(async (transaction) => {
-    const { metadata, paid_at, channel, currency } = data;
-    const { reference, shipmentId, email } = metadata;
+    const { metadata, paid_at, channel, currency, amount, reference, status } =
+      data;
+    const { shipmentId, email } = metadata;
     const payment = await paymentRepo.findOne({
       where: { reference },
       transaction,
@@ -141,15 +148,32 @@ const handlePaymentSuccess = async (data) => {
     await payment.update(
       {
         status: "completed",
-        paidAt: paid_at,
+        paidAt: new Date(paid_at),
         paymentMethod: channel,
         currency,
       },
       { transaction },
     );
     await shipment.update({ status: "Confirmed" }, { transaction });
+    await recordStatusHistory(shipment.id, "Confirmed", {
+      transaction,
+      updatedBy: "system",
+    });
 
     // TODO Enqueue email to be sent to the user
+    const mailOption = {
+      to: email,
+      subject: "Payment Status Update",
+      html: paymentStatusMail({
+        amount,
+        date: paid_at,
+        reference,
+        status: status === "success" ? true : false,
+        shipmentId,
+        currency,
+      }),
+    };
+    enqueuePaymentUpdateMail(mailOption);
 
     return {
       status: "success",
@@ -160,8 +184,9 @@ const handlePaymentSuccess = async (data) => {
 
 const handlePaymentFailure = async (data) => {
   return db.sequelize.transaction(async (transaction) => {
-    const { metadata } = data;
-    const { reference, shipmentId } = metadata;
+    const { metadata, paid_at, channel, currency, amount, reference, status } =
+      data;
+    const { shipmentId, email } = metadata;
     const payment = await paymentRepo.findOne({
       where: { reference },
       transaction,
@@ -189,9 +214,30 @@ const handlePaymentFailure = async (data) => {
       throw error;
     }
 
-    await payment.update({ status: "failed" }, { transaction });
+    await payment.update(
+      {
+        status: "failed",
+        paidAt: paid_at,
+        paymentMethod: channel,
+        currency,
+      },
+      { transaction },
+    );
 
     // TODO Enqueue email to be sent to the user
+    const mailOption = {
+      to: email,
+      subject: "Payment Status Update",
+      html: paymentStatusMail({
+        amount,
+        date: paid_at,
+        reference,
+        status: status === "success" ? true : false,
+        shipmentId,
+        currency,
+      }),
+    };
+    enqueuePaymentUpdateMail(mailOption);
 
     return {
       status: "failed",
@@ -219,7 +265,106 @@ const handleWebhook = async (data) => {
   }
 };
 
+const userPaymentsHistory = async (query, userId) => {
+  const page = query.page ? parseInt(query.page) : 1;
+  const limit = query.limit ? parseInt(query.limit) : 10;
+  const offset = (page - 1) * limit;
+  const keyword = query.keyword ? query.keyword : "";
+  const status = query.status ? query.status : "";
+  const where = {};
+
+  if (keyword) {
+    where.reference = {
+      [Op.iLike]: `%${keyword}%`,
+    };
+  }
+
+  if (status) {
+    where.status = status;
+  }
+
+  const { rows, count } = await paymentRepo.findAndCountAll({
+    where: {
+      ...where,
+      userId,
+    },
+    attributes: [
+      "id",
+      "reference",
+      "amount",
+      "status",
+      "createdAt",
+      "paymentMethod",
+    ],
+    include: {
+      model: db.shipments,
+      as: "shipment",
+      attributes: ["trackingNumber"],
+    },
+    limit,
+    offset,
+    order: [["createdAt", "DESC"]],
+  });
+
+  return {
+    totalItems: count,
+    totalPages: Math.ceil(count / limit),
+    data: rows.map((payment) => ({
+      id: payment.id,
+      reference: payment.reference || "",
+      amount: payment.amount,
+      status: payment.status,
+      timestamp: payment.createdAt,
+      paymentMethod: payment.paymentMethod,
+      shipment: payment.shipment?.trackingNumber || "",
+    })),
+  };
+};
+
+const getById = async (id, userId) => {
+  if (!id) {
+    const error = new Error("Payment id is required");
+    error.status = 400;
+    throw error;
+  }
+
+  const payment = await paymentRepo.findOne({
+    where: { id, userId },
+    attributes: [
+      "id",
+      "reference",
+      "amount",
+      "status",
+      "createdAt",
+      "paymentMethod",
+    ],
+    include: {
+      model: db.shipments,
+      as: "shipment",
+      attributes: ["trackingNumber"],
+    },
+  });
+
+  if (!payment) {
+    const error = new Error("Payment not found");
+    error.status = 404;
+    throw error;
+  }
+
+  return {
+    id: payment.id,
+    reference: payment.reference || "",
+    amount: payment.amount,
+    status: payment.status,
+    timestamp: payment.createdAt,
+    paymentMethod: payment.paymentMethod,
+    shipment: payment.shipment?.trackingNumber || "",
+  };
+};
+
 module.exports = {
   initPayment,
   handleWebhook,
+  userPaymentsHistory,
+  getById,
 };

@@ -23,6 +23,16 @@ const emailWorker = new Worker(
           recipient: job.data.to,
         });
         break;
+
+      case "payment-update":
+        await emailService.sendEmail(job.data);
+        logger.info("Payment update email sent", { recipient: job.data.to });
+        break;
+
+      case "shipment-update-email":
+        await emailService.sendEmail(job.data);
+        logger.info("Shipment update email sent", { recipient: job.data.to });
+        break;
     }
   },
   {
@@ -32,7 +42,7 @@ const emailWorker = new Worker(
       age: 2592000, // Remove completed jobs after 30 days
       count: 100, // Keep up to 100 completed jobs
       limit: 50, // Limit the number of jobs to remove at once
-    }
+    },
   },
 );
 

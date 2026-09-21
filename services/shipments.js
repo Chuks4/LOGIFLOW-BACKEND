@@ -5,43 +5,50 @@ const userRepository = require("../repositories/user");
 const shipItemsRepository = require("../repositories/shipments_items");
 const shipmentStatusHistoryRepo = require("../repositories/shipments_status_history");
 const db = require("../models");
+const { enqueueShipmentUpdateEmail } = require("../queues/email");
+const shipmentUpdateMail = require("../utils/emailTemplates/shipmentUpdateMail");
 
 const STATUS_HISTORY_MAPPING = {
   Pending: {
-    event: "Shipment created",
-    note: "Shipment has been created and is pending pickup",
+    event: "Shipment Created",
+    notes: "Shipment has been created and is pending pickup",
+  },
+  Confirmed: {
+    event: "Shipment Confirmed",
+    notes: "Shipment has been confirmed and is ready to be assigned",
   },
   Assigned: {
-    event: "Shipment assigned",
-    note: "Shipment has been assigned to a driver",
+    event: "Shipment Assigned",
+    notes: "Shipment has been assigned to a driver",
   },
   "Picked Up": {
-    event: "Shipment picked up",
-    note: "Shipment has been picked up by the driver",
+    event: "Shipment Picked up",
+    notes: "Shipment has been picked up by the driver",
   },
   "In Transit": {
-    event: "Shipment in transit",
-    note: "Shipment is in transit",
+    event: "Shipment in Transit",
+    notes: "Shipment is in transit",
   },
   Delivered: {
     event: "Shipment delivered",
-    note: "Shipment has been delivered",
+    notes: "Shipment has been delivered",
   },
   Cancelled: {
     event: "Shipment cancelled",
-    note: "Shipment has been cancelled",
+    notes: "Shipment has been cancelled",
   },
   Returned: {
     event: "Shipment returned",
-    note: "Shipment has been returned",
+    notes: "Shipment has been returned",
   },
 };
 
 const ALLOWED_TRANSITIONS = {
-  Pending: ["Assigned", "Cancelled"],
-  Assigned: ["Picked Up", "Cancelled"],
-  "Picked Up": ["In Transit", "Cancelled", "Returned"],
-  "In Transit": ["Delivered", "Cancelled", "Returned"],
+  Pending: ["Confirmed", "Cancelled"],
+  Confirmed: ["Assigned", "Cancelled"],
+  Assigned: ["Picked Up"],
+  "Picked Up": ["In Transit", "Returned"],
+  "In Transit": ["Delivered", "Returned"],
   Delivered: [],
   Cancelled: [],
   Returned: [],
@@ -59,21 +66,21 @@ const recordStatusHistory = async (shipmentId, status, options = {}) => {
     throw error;
   }
 
-  const { event, note } = STATUS_HISTORY_MAPPING[status];
+  const { event, notes } = STATUS_HISTORY_MAPPING[status];
   const record = await shipmentStatusHistoryRepo.findOne({
     where: { shipmentId, status },
     transaction,
   });
 
   if (record) {
-    return await record.update({ event, note }, { transaction });
+    return await record.update({ event, notes }, { transaction });
   } else {
     return await shipmentStatusHistoryRepo.create(
       {
         shipmentId,
         status,
         event,
-        note,
+        notes,
         updatedBy,
       },
       { transaction },
@@ -112,7 +119,28 @@ const updateStatus = async (userId, shipmentId, status) => {
 
     const updatedBy = user.role?.name;
     await shipment.update({ status }, { transaction });
-    await recordStatusHistory(shipmentId, status, { updatedBy, transaction });
+    const history = await recordStatusHistory(shipmentId, status, {
+      updatedBy,
+      transaction,
+    });
+
+    const customer = await userRepository.findById(shipment.customerId, {
+      transaction,
+    });
+    if (customer?.email) {
+      await enqueueShipmentUpdateEmail({
+        to: customer.email,
+        subject: `Shipment ${shipment.trackingNumber} update`,
+        html: shipmentUpdateMail({
+          trackingNumber: shipment.trackingNumber,
+          status,
+          event: history.event,
+          notes: history.notes,
+          updatedAt: new Date().toISOString(),
+          shipmentId: shipment.id,
+        }),
+      });
+    }
     return await shipItemsRepository.findById(shipmentId, { transaction });
   });
 };
@@ -150,10 +178,27 @@ const assignDriverShipment = async (dispatcherId, shipmentId, driverId) => {
       { driverId, dispatcherId, status: "Assigned" },
       { transaction },
     );
-    await recordStatusHistory(shipmentId, "Assigned", {
+    const history = await recordStatusHistory(shipmentId, "Assigned", {
       updatedBy,
       transaction,
     });
+    const customer = await userRepository.findById(shipment.customerId, {
+      transaction,
+    });
+    if (customer?.email) {
+      await enqueueShipmentUpdateEmail({
+        to: customer.email,
+        subject: `Shipment ${shipment.trackingNumber} update`,
+        html: shipmentUpdateMail({
+          trackingNumber: shipment.trackingNumber,
+          status: "Assigned",
+          event: history.event,
+          notes: history.notes,
+          updatedAt: new Date().toISOString(),
+          shipmentId: shipment.id,
+        }),
+      });
+    }
     return await shipmentRepository.findById(shipmentId, { transaction });
   });
 };
@@ -269,8 +314,8 @@ const getAll = async (query) => {
 
   if (keyword) {
     where[Op.or] = [
-      { trackingNumber: { [Op.like]: `%${keyword}%` } },
-      { recipientName: { [Op.like]: `%${keyword}%` } },
+      { trackingNumber: { [Op.iLike]: `%${keyword}%` } },
+      { recipientName: { [Op.iLike]: `%${keyword}%` } },
     ];
   }
 
@@ -312,8 +357,9 @@ const getById = async (shipmentId) => {
     include: [
       {
         model: db.shipmentStatusHistory,
-        as: "items",
+        as: "shipmentStatusHistory",
         required: true,
+        attributes: ["id", "createdAt", "event", "notes", "status"],
       },
     ],
   });
@@ -333,4 +379,5 @@ module.exports = {
   getAll,
   getById,
   updateStatus,
+  recordStatusHistory,
 };

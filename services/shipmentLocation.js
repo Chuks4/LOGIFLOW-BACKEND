@@ -3,8 +3,9 @@ const shipmentRepo = require("../repositories/shipments");
 const { trimData } = require("../utils/util");
 const driverRepo = require("../repositories/user");
 const { can } = require("../services/rbac");
+const db = require("../models");
 
-const ALLOWEDSTATUSES = ["Picked Up", "In Transit", "Assigned"];
+const ALLOWED_STATUSES = ["Picked Up", "In Transit", "Assigned"];
 
 /**
  * Create a shipment location
@@ -51,7 +52,7 @@ const createShipmentLocation = async (data) => {
     throw error;
   }
 
-  if (!ALLOWEDSTATUSES.includes(shipment.status)) {
+  if (!ALLOWED_STATUSES.includes(shipment.status)) {
     const error = new Error("Shipment is not in transit");
     error.status = 400;
     throw error;
@@ -86,14 +87,14 @@ const canViewShipmentLocation = async (user, shipmentId) => {
     throw error;
   }
 
-  const role = await roleRepo.findById(roleId);
+  const role = await db.roles.findByPk(roleId);
   if (!role) {
     const error = new Error("Role not found");
     error.status = 404;
     throw error;
   }
 
-  if (!ALLOWEDSTATUSES.includes(shipment.status)) {
+  if (!ALLOWED_STATUSES.includes(shipment.status)) {
     const error = new Error("Shipment is not in transit");
     error.status = 400;
     throw error;
@@ -127,7 +128,7 @@ const canUpdateShipmentLocation = async (user, shipmentId) => {
     throw error;
   }
 
-  const role = await roleRepo.findById(roleId);
+  const role = await db.roles.findByPk(roleId);
   if (!role) {
     const error = new Error("Role not found");
     error.status = 404;
@@ -137,7 +138,7 @@ const canUpdateShipmentLocation = async (user, shipmentId) => {
   const resource = "shipment";
   const action = "update";
 
-  if (!ALLOWEDSTATUSES.includes(shipment.status)) {
+  if (!ALLOWED_STATUSES.includes(shipment.status)) {
     const error = new Error("Shipment is not in transit");
     error.status = 400;
     throw error;
@@ -145,9 +146,9 @@ const canUpdateShipmentLocation = async (user, shipmentId) => {
 
   const allowed = await can(roleId, resource, action);
   if (!allowed) {
-    return res
-      .status(403)
-      .json({ message: "You are not authorized to perform this action" });
+    const error = new Error("You are not authorized to perform this action");
+    error.status = 403;
+    throw error;
   }
 
   if (shipment.driverId !== id) {

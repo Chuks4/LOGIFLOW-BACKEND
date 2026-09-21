@@ -9,21 +9,25 @@ const geoapifyRouter = require("./routes/geoapify");
 const permissionRouter = require("./routes/permissions");
 const roleRouter = require("./routes/roles");
 const paymentRouter = require("./routes/payments");
+const analyticsRouter = require("./routes/analytics");
 
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdocs = require("swagger-jsdoc");
 const cors = require("cors");
 
-const allowedOrigins = ["http://localhost:3000"];
+const allowedOrigins = process.env.ALLOWED_ORIGINS.split(",").map((origin) =>
+  origin.trim(),
+);
+
 const corsOptions = {
   origin: function (origin, callback) {
-    if (origin || allowedOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
 
     callback(new Error("Not allowed by CORS"));
   },
-  methods: ["GET, PUT, PATCH, POST, DELETE", "OPTIONS"],
+  methods: ["GET", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 };
@@ -112,5 +116,6 @@ app.use("/api/v1/geoapify", geoapifyRouter);
 app.use("/api/v1/permissions", permissionRouter);
 app.use("/api/v1/roles", roleRouter);
 app.use("/api/v1/payments", paymentRouter);
+app.use("/api/v1/analytics", analyticsRouter);
 
 module.exports = app;

@@ -10,7 +10,9 @@ const getClientUrl = () =>
   (process.env.CLIENT_URL || "http://localhost:3000").replace(/\/+$/, "");
 
 const getActionUrl = (path, token) =>
-  `${getClientUrl()}${path}?token=${encodeURIComponent(token)}`;
+  token
+    ? `${getClientUrl()}${path}?token=${encodeURIComponent(token)}`
+    : `${getClientUrl()}${path}`;
 
 const emailLayout = ({ preheader, eyebrow, title, content, action }) => `
 <!doctype html>

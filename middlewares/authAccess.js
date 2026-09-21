@@ -17,12 +17,12 @@ const authAccess = (req, res, next) => {
     const decoded = jwt.verify(token, privateKey);
     req.user = decoded;
 
-    if (!req.user.emailVerified && !req.path.includes("/verify-email")) {
-      return res.status(401).json({
-        status: false,
-        message: "Please verify your email to access this resource",
-      });
-    }
+    // if (!req.user.emailVerified && !req.path.includes("/verify-email")) {
+    //   return res.status(401).json({
+    //     status: false,
+    //     message: "Please verify your email to access this resource",
+    //   });
+    // }
 
     if (req.user.status === "suspended") {
       return res.status(401).json({

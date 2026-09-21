@@ -76,17 +76,52 @@ const calculateEstimatedShipmentCost = async (body) => {
       distanceInKm * pricePerKm + vehicleFee + shipmentTypePricing;
 
     return {
-      estimatedCost: Math.round(estimatedCost).toLocaleString(),
+      estimatedCost: Math.round(estimatedCost),
       distanceInKm,
       pricePerKm,
       vehicleFee,
       shipmentTypePricing,
     };
   } catch (error) {
+    if (error.response?.data?.statusCode === 400) {
+      throw error.response?.data?.message;
+    }
+    throw "An error occurred while calculating the estimated shipment cost";
+  }
+};
+
+const searchAddress = async (address) => {
+  if (typeof address !== "string" || !address.trim()) {
+    const error = new Error("Address is required");
+    error.status = 400;
     throw error;
   }
+
+  const { data } = await axios.get(`${baseUrl}/geocode/search`, {
+    params: {
+      apiKey,
+      format: "geojson",
+      limit: 1,
+      text: address.trim(),
+    },
+  });
+
+  const feature = data.features?.[0];
+  if (!feature?.geometry?.coordinates || !feature.properties?.formatted) {
+    const error = new Error("Address not found");
+    error.status = 404;
+    throw error;
+  }
+
+  const [longitude, latitude] = feature.geometry.coordinates;
+  return {
+    address: feature.properties.formatted,
+    latitude,
+    longitude,
+  };
 };
 
 module.exports = {
   calculateEstimatedShipmentCost,
+  searchAddress,
 };

@@ -2,6 +2,7 @@ const router = require("express").Router();
 const {authAccess} = require("../middlewares/authAccess");
 const geoapifyController = require("../controllers/geoapify");
 const { validateCalculateShipmentCost } = require("../validators/geoapify");
+const { body } = require("express-validator");
 
 /**
  * @swagger
@@ -52,6 +53,13 @@ router.post(
   authAccess,
   validateCalculateShipmentCost,
   geoapifyController.calculateShpimentCost,
+);
+
+router.post(
+  "/search",
+  authAccess,
+  body("address").trim().notEmpty().withMessage("Address is required"),
+  geoapifyController.searchAddress,
 );
 
 module.exports = router;

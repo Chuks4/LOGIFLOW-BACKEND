@@ -39,7 +39,7 @@ const processPaymentWebhooks = async (req, res) => {
     const { status, rawBody } = verifySignature(body, signature);
 
     if (!status) {
-      return res.send(200);
+      return res.sendStatus(200);
     }
 
     const { created, parsedBody } = await createWebhookEvent({
@@ -52,6 +52,7 @@ const processPaymentWebhooks = async (req, res) => {
     if (created) {
       // Enqueue payment webhook
       await enqueuePaymentWebhook(parsedBody);
+      console.log("Payment webhook enqueued");
       return res.send(200);
     }
 
@@ -69,7 +70,45 @@ const processPaymentWebhooks = async (req, res) => {
   }
 };
 
+const userPaymentsHistory = async (req, res) => {
+  try {
+    const payments = await paymentService.userPaymentsHistory(
+      req.query,
+      req.user.id,
+    );
+    return res.status(200).json({ status: true, data: payments });
+  } catch (error) {
+    if (error.status) {
+      return res
+        .status(error.status)
+        .json({ status: false, message: error.message });
+    }
+    return res
+      .status(500)
+      .json({ status: false, message: "Internal server error" });
+  }
+};
+
+const getById = async (req, res) => {
+  try {
+    const payment = await paymentService.getById(req.params.id, req.user.id);
+    return res.status(200).json({ status: true, data: payment });
+  } catch (error) {
+    if (error.status) {
+      return res
+        .status(error.status)
+        .json({ status: false, message: error.message });
+    }
+
+    return res
+      .status(500)
+      .json({ status: false, message: "Internal server error" });
+  }
+};
+
 module.exports = {
   initPayment,
   processPaymentWebhooks,
+  userPaymentsHistory,
+  getById,
 };

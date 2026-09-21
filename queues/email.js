@@ -32,8 +32,30 @@ const enqueEmailVerificationEmail = async (emailData) => {
   });
 };
 
+const enqueuePaymentUpdateMail = async (emailData) => {
+  await emailQueue.add("payment-update", emailData, {
+    attempts: 3,
+    backoff: {
+      type: "exponential",
+      delay: 5000,
+    },
+  });
+};
+
+const enqueueShipmentUpdateEmail = async (emailData) => {
+  await emailQueue.add("shipment-update-email", emailData, {
+    attempts: 3,
+    backoff: {
+      type: "exponential",
+      delay: 5000,
+    },
+  });
+};
+
 module.exports = {
   enqueWelcomeEmail,
   enquePasswordResetEmail,
   enqueEmailVerificationEmail,
+  enqueuePaymentUpdateMail,
+  enqueueShipmentUpdateEmail,
 };
