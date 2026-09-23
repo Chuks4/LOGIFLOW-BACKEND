@@ -5,6 +5,7 @@ const {
   SHIPMENT_TYPES_PRICING,
 } = require("../config/geoapify.config");
 const axios = require("axios");
+const { errorMsg } = require("../utils/util");
 
 const calculateEstimatedShipmentCost = async (body) => {
   try {
@@ -27,9 +28,7 @@ const calculateEstimatedShipmentCost = async (body) => {
       deliveryLng < -180 ||
       deliveryLng > 180
     ) {
-      const error = new Error("Invalid coordinates");
-      error.status = 400;
-      throw error;
+      errorMsg("Invalid coordinates");
     }
 
     if (
@@ -42,9 +41,7 @@ const calculateEstimatedShipmentCost = async (body) => {
         shipmentType,
       )
     ) {
-      const error = new Error("Invalid vehicle type or shipment type");
-      error.status = 400;
-      throw error;
+      errorMsg("Invalid vehicle type or shipment type");
     }
 
     const vehicleTypePricing = VEHICLE_TYPES_PRICING[vehicleType];
@@ -63,11 +60,7 @@ const calculateEstimatedShipmentCost = async (body) => {
     });
 
     if (data.features.length === 0 || !data.features[0]?.properties?.distance) {
-      const error = new Error(
-        "Unable to calculate route between the locations",
-      );
-      error.status = 400;
-      throw error;
+      errorMsg("Unable to calculate route between the locations");
     }
 
     const distanceInMeters = data.features[0].properties.distance;
@@ -86,15 +79,13 @@ const calculateEstimatedShipmentCost = async (body) => {
     if (error.response?.data?.statusCode === 400) {
       throw error.response?.data?.message;
     }
-    throw "An error occurred while calculating the estimated shipment cost";
+    errorMsg("An error occurred while calculating the estimated shipment cost");
   }
 };
 
 const searchAddress = async (address) => {
   if (typeof address !== "string" || !address.trim()) {
-    const error = new Error("Address is required");
-    error.status = 400;
-    throw error;
+    errorMsg("Address is required");
   }
 
   const { data } = await axios.get(`${baseUrl}/geocode/search`, {
@@ -108,9 +99,7 @@ const searchAddress = async (address) => {
 
   const feature = data.features?.[0];
   if (!feature?.geometry?.coordinates || !feature.properties?.formatted) {
-    const error = new Error("Address not found");
-    error.status = 404;
-    throw error;
+    errorMsg("Address not found");
   }
 
   const [longitude, latitude] = feature.geometry.coordinates;

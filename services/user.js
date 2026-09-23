@@ -5,6 +5,7 @@ const {
   deleteFile,
   trimData,
   isUserAtLeastEighteen,
+  errorMsg,
 } = require("../utils/util");
 
 /**
@@ -42,6 +43,7 @@ const getCustomers = async (query) => {
     offset,
     limit,
     order: [["createdAt", "DESC"]],
+    distinct: true,
   });
 
   return {
@@ -58,11 +60,8 @@ const getCustomers = async (query) => {
  * @returns {Promise<Object>} - User object
  */
 const getUserById = async (id) => {
-  if (!id) {
-    const error = new Error("User id is required");
-    error.statusCode = 400;
-    throw error;
-  }
+  if (!id) errorMsg("User id is required");
+
   const user = await userRepository.findById(id, {
     attributes: { exclude: ["password"] },
     include: {
@@ -71,11 +70,8 @@ const getUserById = async (id) => {
       attributes: ["name"],
     },
   });
-  if (!user) {
-    const error = new Error("User not found");
-    error.statusCode = 404;
-    throw error;
-  }
+
+  if (!user) errorMsg("User not found", 404);
   return user;
 };
 
@@ -92,9 +88,8 @@ const updateUser = async (id, data, file) => {
     if (file) {
       deleteFile(file?.path);
     }
-    const error = new Error("User not found");
-    error.statusCode = 404;
-    throw error;
+
+    errorMsg("User not found", 404);
   }
 
   const {
@@ -110,9 +105,7 @@ const updateUser = async (id, data, file) => {
   } = trimData(data);
 
   if (dob && !isUserAtLeastEighteen(dob)) {
-    const error = new Error("User must be at least 18 years old");
-    error.statusCode = 400;
-    throw error;
+    errorMsg("User must be at least 18 years old");
   }
 
   await userRepository.update(id, {
@@ -146,17 +139,11 @@ const updateUser = async (id, data, file) => {
  */
 const updateUserStatus = async (id, status) => {
   const user = await userRepository.findById(id);
-  if (!user) {
-    const error = new Error("User not found");
-    error.statusCode = 404;
-    throw error;
-  }
+  if (!user) errorMsg("User not found", 404);
 
   const ALLOWED_STATUSES = ["active", "suspended"];
   if (!ALLOWED_STATUSES.includes(status)) {
-    const error = new Error("Status can only be active or suspended");
-    error.status = 400;
-    throw error;
+    errorMsg("Invalid status. Allowed statuses are: active, suspended");
   }
 
   await userRepository.update(id, {

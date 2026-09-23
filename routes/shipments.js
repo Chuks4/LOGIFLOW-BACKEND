@@ -316,7 +316,7 @@ router.put("/:id", authAccess, shipmentController.updateStatus);
  *       500:
  *         description: Internal server error
  */
-router.put(
+router.patch(
   "/:shipmentId/:driverId/assign-driver",
   authAccess,
   shipmentController.assignDriver,

@@ -6,7 +6,8 @@ const shipmentUpdateMail = ({
   event,
   notes,
   updatedAt,
-  shipmentId,
+  driverName,
+  driverContact,
 }) =>
   emailLayout({
     preheader: `Shipment ${trackingNumber} status update.`,
@@ -23,6 +24,16 @@ const shipmentUpdateMail = ({
       ${
         updatedAt
           ? `<p style="margin:0;color:#899287;font-size:13px;">Updated on ${new Date(escapeHtml(updatedAt)).toLocaleDateString()}.</p>`
+          : ""
+      }
+      ${
+        driverName
+          ? `<p style="margin:0;color:#899287;font-size:13px;">Driver: ${escapeHtml(driverName)}</p>`
+          : ""
+      }
+      ${
+        driverContact
+          ? `<p style="margin:0;color:#899287;font-size:13px;">Driver contact: ${escapeHtml(driverContact)}</p>`
           : ""
       }
     `,

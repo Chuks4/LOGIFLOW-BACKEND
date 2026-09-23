@@ -10,6 +10,7 @@ const ALLOWED_ACTIONS = Object.freeze({
   manage: "manage",
   approve: "approve",
   reject: "reject",
+  track: "track"
 });
 
 const ALLOWED_RESOURCES = Object.freeze({

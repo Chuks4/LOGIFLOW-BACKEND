@@ -1,6 +1,7 @@
 const permsRepo = require("../repositories/permissions");
 const { ALLOWED_ACTIONS, ALLOWED_RESOURCES } = require("../constants/rbac");
 const { Op } = require("sequelize");
+const { errorMsg } = require("../utils/util");
 
 /**
  * Create a permission
@@ -17,22 +18,14 @@ const create = async (data) => {
     where: { name: `${resource}:${action}` },
   });
 
-  if (permission) {
-    const error = new Error("Permission already exists");
-    error.status = 409;
-    throw error;
-  }
+  if (permission) errorMsg("Permission already exists", 409);
 
   if (!Object.prototype.hasOwnProperty.call(ALLOWED_ACTIONS, action)) {
-    const error = new Error("Invalid action");
-    error.status = 400;
-    throw error;
+    errorMsg("Invalid action");
   }
 
   if (!Object.prototype.hasOwnProperty.call(ALLOWED_RESOURCES, resource)) {
-    const error = new Error("Invalid resource");
-    error.status = 400;
-    throw error;
+    errorMsg("Invalid resource");
   }
 
   return permsRepo.create({
@@ -49,25 +42,17 @@ const update = async (id, data) => {
     where: { id },
   });
 
-  if (!permission) {
-    const error = new Error("Permission not found");
-    error.status = 404;
-    throw error;
-  }
+  if (!permission) errorMsg("Permission not found");
 
   const actionLower = action.trim().toLowerCase();
   const resourceLower = resource.trim().toLowerCase();
 
   if (!Object.prototype.hasOwnProperty.call(ALLOWED_ACTIONS, actionLower)) {
-    const error = new Error("Invalid action");
-    error.status = 400;
-    throw error;
+    errorMsg("Invalid action");
   }
 
   if (!Object.prototype.hasOwnProperty.call(ALLOWED_RESOURCES, resource)) {
-    const error = new Error("Invalid resource");
-    error.status = 400;
-    throw error;
+    errorMsg("Invalid resource");
   }
 
   await permission.update({
@@ -86,11 +71,7 @@ const remove = async (id) => {
     where: { id },
   });
 
-  if (!permission) {
-    const error = new Error("Permission not found");
-    error.status = 404;
-    throw error;
-  }
+  if (!permission) errorMsg("Permission not found", 404);
 
   await permission.destroy();
   return id;

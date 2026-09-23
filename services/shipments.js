@@ -1,6 +1,6 @@
 const { Op } = require("sequelize");
 const shipmentRepository = require("../repositories/shipments");
-const { generateTrackingNumber } = require("../utils/util");
+const { generateTrackingNumber, errorMsg } = require("../utils/util");
 const userRepository = require("../repositories/user");
 const shipItemsRepository = require("../repositories/shipments_items");
 const shipmentStatusHistoryRepo = require("../repositories/shipments_status_history");
@@ -60,11 +60,7 @@ const recordStatusHistory = async (shipmentId, status, options = {}) => {
     transaction,
   });
 
-  if (!shipment) {
-    const error = new Error("Shipment not found");
-    error.status = 404;
-    throw error;
-  }
+  if (!shipment) errorMsg("Shipment not found", 404);
 
   const { event, notes } = STATUS_HISTORY_MAPPING[status];
   const record = await shipmentStatusHistoryRepo.findOne({
@@ -91,30 +87,18 @@ const recordStatusHistory = async (shipmentId, status, options = {}) => {
 const updateStatus = async (userId, shipmentId, status) => {
   return await db.sequelize.transaction(async (transaction) => {
     const shipment = await shipmentRepository.findById(shipmentId);
-    if (!shipment) {
-      const error = new Error("Shipment not found");
-      error.status = 404;
-      throw error;
-    }
+    if (!shipment) errorMsg("Shipment not found", 404);
 
     const user = await userRepository.findById(userId, {
       include: { model: db.roles, as: "role", attributes: ["name"] },
       transaction,
     });
-    if (!user) {
-      const error = new Error("User not found");
-      error.status = 404;
-      throw error;
-    }
 
-    if (!STATUS_HISTORY_MAPPING[status]) {
-      const error = new Error("Invalid status");
-    }
+    if (!user) errorMsg("User not found", 404);
+    if (!STATUS_HISTORY_MAPPING[status]) errorMsg("Invalid status");
 
     if (!ALLOWED_TRANSITIONS[shipment.status].includes(status)) {
-      const error = new Error("Invalid status transition");
-      error.status = 400;
-      throw error;
+      errorMsg("Invalid status transition");
     }
 
     const updatedBy = user.role?.name;
@@ -148,40 +132,34 @@ const updateStatus = async (userId, shipmentId, status) => {
 const assignDriverShipment = async (dispatcherId, shipmentId, driverId) => {
   return await db.sequelize.transaction(async (transaction) => {
     const driver = await userRepository.findById(driverId, { transaction });
-    if (!driver) {
-      const error = new Error("Driver not found");
-      error.status = 404;
-      throw error;
-    }
+    if (!driver) errorMsg("Driver not found", 404);
 
     const dispatcher = await userRepository.findById(dispatcherId, {
       include: { model: db.roles, as: "role", attributes: ["name"] },
       transaction,
     });
-    if (!dispatcher) {
-      const error = new Error("Dispatcher not found");
-      error.status = 404;
-      throw error;
-    }
+    if (!dispatcher) errorMsg("Dispatcher not found", 404);
 
     const updatedBy = dispatcher.role?.name;
     const shipment = await shipmentRepository.findById(shipmentId, {
       transaction,
     });
-    if (!shipment) {
-      const error = new Error("Shipment not found");
-      error.status = 404;
-      throw error;
+    if (!shipment) errorMsg("Shipment not found", 404);
+
+    if (!ALLOWED_TRANSITIONS[shipment.status].includes("Assigned")) {
+      errorMsg("Invalid status transition");
     }
 
     await shipment.update(
       { driverId, dispatcherId, status: "Assigned" },
       { transaction },
     );
+
     const history = await recordStatusHistory(shipmentId, "Assigned", {
       updatedBy,
       transaction,
     });
+
     const customer = await userRepository.findById(shipment.customerId, {
       transaction,
     });
@@ -196,6 +174,8 @@ const assignDriverShipment = async (dispatcherId, shipmentId, driverId) => {
           notes: history.notes,
           updatedAt: new Date().toISOString(),
           shipmentId: shipment.id,
+          driverName: driver.firstName,
+          driverContact: driver.phoneNumber,
         }),
       });
     }
@@ -216,23 +196,11 @@ const create = async (data, customerId) => {
     } = data;
 
     const customer = await userRepository.findById(customerId, { transaction });
-    if (!customer) {
-      const error = new Error("Customer not found");
-      error.status = 404;
-      throw error;
-    }
+    if (!customer) errorMsg("User not found", 404);
 
-    if (!Array.isArray(items)) {
-      const error = new Error("Items must be an array");
-      error.status = 400;
-      throw error;
-    }
+    if (!Array.isArray(items)) errorMsg("Items must be an array");
 
-    if (items.length === 0) {
-      const error = new Error("At least one item must be provided");
-      error.status = 400;
-      throw error;
-    }
+    if (items.length === 0) errorMsg("At least one item must be provided");
 
     if (
       pickupLatitude < -90 ||
@@ -244,17 +212,11 @@ const create = async (data, customerId) => {
       deliveryLongitude < -180 ||
       deliveryLongitude > 180
     ) {
-      const error = new Error("Invalid coordinates");
-      error.status = 400;
-      throw error;
+      errorMsg("Invalid coordinates");
     }
 
     if (pickupAddress === deliveryAddress) {
-      const error = new Error(
-        "Pickup and delivery addresses cannot be the same",
-      );
-      error.status = 400;
-      throw error;
+      errorMsg("Pickup and delivery addresses cannot be the same");
     }
 
     const trackingNumber = generateTrackingNumber();
@@ -334,6 +296,7 @@ const getAll = async (query) => {
   const { rows, count } = await shipmentRepository.findAndCountAll({
     where: { ...where },
     include: { model: db.shipment_items, as: "items", required: true },
+    distinct: true,
     offset,
     limit,
     order: [["createdAt", "DESC"]],
@@ -347,11 +310,7 @@ const getAll = async (query) => {
 };
 
 const getById = async (shipmentId) => {
-  if (!shipmentId) {
-    const error = new Error("Shipment id is required");
-    error.status = 400;
-    throw error;
-  }
+  if (!shipmentId) errorMsg("Shipment id is required");
 
   const shipment = await shipmentRepository.findById(shipmentId, {
     include: [
@@ -364,11 +323,7 @@ const getById = async (shipmentId) => {
     ],
   });
 
-  if (!shipment) {
-    const error = new Error("Shipment not found");
-    error.status = 404;
-    throw error;
-  }
+  if (!shipment) errorMsg("Shipment not found", 404);
 
   return shipment;
 };

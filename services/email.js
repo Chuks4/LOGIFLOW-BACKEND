@@ -1,5 +1,6 @@
 const nodemailer = require("nodemailer");
-const {logger} = require("../logger/logger");
+const { logger } = require("../logger/logger");
+const { errorMsg } = require("../utils/util");
 
 class EmailServices {
   constructor() {
@@ -36,9 +37,7 @@ class EmailServices {
       return { status: true, result };
     } catch (err) {
       logger.error("Failed to send email", { error: err.message });
-      const error = new Error("Email could not be sent");
-      error.statusCode = 500;
-      throw error;
+      errorMsg("Failed to send email", 500);
     }
   }
 }

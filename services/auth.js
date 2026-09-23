@@ -21,6 +21,7 @@ const {
   hashToken,
   rotateRefreshToken,
   isUserAtLeastEighteen,
+  errorMsg,
 } = require("../utils/util");
 const welcomeMail = require("../utils/emailTemplates/welcomeMail");
 const passwordResetMail = require("../utils/emailTemplates/passwordResetMail");
@@ -34,27 +35,15 @@ const emailVerificationMail = require("../utils/emailTemplates/emailVerification
  * @returns {String} accessToken
  */
 const login = async (email, password, options = {}) => {
-  if (!isEmailValid(email)) {
-    const error = new Error("Invalid Email Address");
-    error.status = 401;
-    throw error;
-  }
+  if (!isEmailValid(email)) errorMsg("Invalid Email Address");
 
   const emailLower = email.trim().toLowerCase();
   const { req, res } = options;
   const user = await userRepository.findByEmail(emailLower);
-  if (!user) {
-    const error = new Error("Invalid Credentials");
-    error.status = 401;
-    throw error;
-  }
+  if (!user) errorMsg("Invalid Credentials");
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
-  if (!isPasswordValid) {
-    const error = new Error("Invalid Credentials");
-    error.status = 401;
-    throw error;
-  }
+  if (!isPasswordValid) errorMsg("Invalid Credentials");
 
   const payload = {
     id: user.id,
@@ -65,13 +54,8 @@ const login = async (email, password, options = {}) => {
     status: user.status,
   };
 
-  if (user.status === "suspended") {
-    const error = new Error(
-      "Your account has been suspended, Please contact support",
-    );
-    error.status = 401;
-    throw error;
-  }
+  if (user.status === "suspended")
+    errorMsg("Your account has been suspended, Please contact support", 401);
 
   const accessToken = signAccessToken(payload);
   const jti = createJti();
@@ -92,19 +76,13 @@ const login = async (email, password, options = {}) => {
 const refreshToken = async (options = {}) => {
   const { req, res } = options;
   const token = req.cookies?.refresh_token || "";
-  if (!token) {
-    const error = new Error("Refresh token not recognized");
-    error.status = 401;
-    throw error;
-  }
+  if (!token) errorMsg("Refresh token not recognized");
 
   let decoded;
   try {
     decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET_KEY);
   } catch (err) {
-    const error = new Error("Invalid or expired refresh token");
-    error.status = 401;
-    throw error;
+    errorMsg("Invalid or expired refresh token");
   }
 
   const jti = createJti();
@@ -119,23 +97,12 @@ const refreshToken = async (options = {}) => {
     },
   });
 
-  if (!existing) {
-    const error = new Error("Refresh token not recognized");
-    error.status = 401;
-    throw error;
-  }
-
-  if (existing.revoked) {
-    const error = new Error("Refresh token has been revoked");
-    error.status = 401;
-    throw error;
-  }
+  if (!existing) errorMsg("Refresh token not recognized");
+  if (existing.revoked) errorMsg("Refresh token has been revoked");
 
   if (existing.expiresAt < new Date()) {
-    await logout(options);
-    const error = new Error("Refresh token has expired");
-    error.status = 401;
-    throw error;
+    logout(options);
+    errorMsg("Refresh token has expired, Please login again", 401);
   }
 
   const { accessToken } = await rotateRefreshToken(
@@ -156,11 +123,7 @@ const refreshToken = async (options = {}) => {
 const logout = async (options = {}) => {
   const { req, res } = options;
   const token = req.cookies?.refresh_token || "";
-  if (!token) {
-    const error = new Error("Refresh token not recognized");
-    error.status = 401;
-    throw error;
-  }
+  if (!token) errorMsg("Refresh token not recognized");
 
   const tokenHash = hashToken(token);
   const existing = await refreshTokenRepo.findOne({ where: { tokenHash } });
@@ -198,25 +161,15 @@ const register = async (data) => {
     address,
   } = data;
 
-  if (email && !isEmailValid(email)) {
-    const error = new Error("Invalid Email Address");
-    error.status = 401;
-    throw error;
-  }
+  if (email && !isEmailValid(email)) errorMsg("Invalid Email Address");
   const hashedPasswod = await bcrypt.hash(password, 10);
 
   const emailExists = await userRepository.findByEmail(email);
-  if (emailExists) {
-    const error = new Error("Email already exists");
-    error.status = 409;
-    throw error;
-  }
+  if (emailExists) errorMsg("Email already exists", 409);
 
   //   Checks is user is upto eighteen years old
   if (dob && !isNaN(new Date(dob).getTime()) && !isUserAtLeastEighteen(dob)) {
-    const error = new Error("User must be at least eighteen years old");
-    error.status = 400;
-    throw error;
+    errorMsg("User must be at least eighteen years old");
   }
 
   const role = roleId
@@ -224,17 +177,8 @@ const register = async (data) => {
       (await roleRepository.findOne({ where: { name: roleId.toLowerCase() } }))
     : await roleRepository.findOne({ where: { name: "customer" } });
 
-  if (!role) {
-    const error = new Error("Role not found");
-    error.status = 404;
-    throw error;
-  }
-
-  if (!role.isActive) {
-    const error = new Error("Role is not activated yet");
-    error.status = 400;
-    throw error;
-  }
+  if (!role) errorMsg("Role not found", 404);
+  if (!role.isActive) errorMsg("Role is not activated yet");
 
   const user = await userRepository.create({
     email,
@@ -276,19 +220,13 @@ const register = async (data) => {
  * @returns {Promise<Object>} { message: String }
  */
 const forgotPassword = async (email) => {
-  if (!isEmailValid(email)) {
-    const error = new Error("Invalid Email Address");
-    error.status = 400;
-    throw error;
-  }
+  if (!isEmailValid(email)) errorMsg("Invalid Email Address");
 
   const user = await userRepository.findByEmail(email);
   if (!user) {
-    const error = new Error(
+    errorMsg(
       "If an account with that email exists, a password reset link has been sent.",
     );
-    error.status = 400;
-    throw error;
   }
 
   const token = createJti();
@@ -327,16 +265,10 @@ const resetPassword = async (data) => {
     where: { tokenHash: hashedToken, purpose: "password_reset" },
   });
 
-  if (!existingToken) {
-    const error = new Error("Token not recognized");
-    error.status = 400;
-    throw error;
-  }
+  if (!existingToken) errorMsg("Token not recognized");
 
   if (existingToken.expiresAt < new Date()) {
-    const error = new Error("Invalid or expired reset token");
-    error.status = 400;
-    throw error;
+    errorMsg("Invalid or expired reset token");
   }
 
   const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -365,17 +297,10 @@ const verifyEmail = async (token) => {
     },
   });
 
-  if (!existingToken) {
-    const error = new Error("Invalid or used verification token");
-    error.status = 400;
-    throw error;
-  }
+  if (!existingToken) errorMsg("Invalid or used verification token");
 
-  if (existingToken.expiresAt < new Date()) {
-    const error = new Error("Invalid or expired verification token");
-    error.status = 400;
-    throw error;
-  }
+  if (existingToken.expiresAt < new Date())
+    errorMsg("Invalid or expired verification token");
 
   await userRepository.update(existingToken.userId, {
     emailVerified: true,

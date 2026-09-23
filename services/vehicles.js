@@ -2,6 +2,7 @@ const vehicleRepo = require("../repositories/vehicles");
 const { Op } = require("sequelize");
 const db = require("../models");
 const userRepo = require("../repositories/user");
+const { errorMsg } = require("../utils/util");
 
 /**
  * Creates new vehicle
@@ -12,11 +13,7 @@ const userRepo = require("../repositories/user");
 const create = async (data) => {
   const { plateNumber } = data;
   const vehicle = await vehicleRepo.findByPlateNumber(plateNumber);
-  if (vehicle) {
-    const error = new Error("Vehicle with plate number already exists");
-    error.status = 409;
-    throw error;
-  }
+  if (vehicle) errorMsg("Vehicle with plate number already exists", 409);
 
   return await vehicleRepo.create({ ...data, status: "Available" });
 };
@@ -57,6 +54,7 @@ const getAll = async (query) => {
     limit,
     offset,
     order: [["createdAt", "DESC"]],
+    distinct: true,
   });
 
   return {
@@ -79,12 +77,8 @@ const getById = async (id) => {
       attributes: ["id", "firstName", "lastName"],
     },
   });
-  if (!vehicle) {
-    const error = new Error("Vehicle not found");
-    error.status = 404;
-    throw error;
-  }
 
+  if (!vehicle) errorMsg("Vehicle not found", 404);
   return vehicle;
 };
 
@@ -96,11 +90,7 @@ const getById = async (id) => {
  */
 const update = async (id, data) => {
   const vehicle = await getById(id);
-  if (!vehicle) {
-    const error = new Error("Vehicle not found");
-    error.status = 404;
-    throw error;
-  }
+  if (!vehicle) errorMsg("Vehicle not found", 404);
 
   await vehicle.update({ ...data });
   return await getById(id);
@@ -112,29 +102,13 @@ const assignDriver = async (id, driverId) => {
     include: { model: db.roles, as: "role", attributes: ["name"] },
   });
 
-  if (!vehicle) {
-    const error = new Error("Vehicle not found");
-    error.status = 404;
-    throw error;
-  }
+  if (!vehicle) errorMsg("Vehicle not found", 404);
 
-  if (!driver) {
-    const error = new Error("Driver not found");
-    error.status = 404;
-    throw error;
-  }
+  if (!driver) errorMsg("Driver not found", 404);
 
-  if (vehicle.status !== "Available") {
-    const error = new Error("Vehicle is not available");
-    error.status = 400;
-    throw error;
-  }
+  if (vehicle.status !== "Available") errorMsg("Vehicle is not available");
 
-  if (driver.role?.name !== "driver") {
-    const error = new Error("User is not a driver");
-    error.status = 400;
-    throw error;
-  }
+  if (driver.role?.name !== "driver") errorMsg("User is not a driver");
 
   await vehicle.update({ driverId });
   return await getById(id);
@@ -147,11 +121,7 @@ const assignDriver = async (id, driverId) => {
  */
 const deleteById = async (id) => {
   const vehicle = await vehicleRepo.findById(id);
-  if (!vehicle) {
-    const error = new Error("Vehicle not found");
-    error.status = 404;
-    throw error;
-  }
+  if (!vehicle) errorMsg("Vehicle not found", 404);
 
   await vehicleRepo.delete({ where: { id } });
   return id;

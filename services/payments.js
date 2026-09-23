@@ -1,5 +1,5 @@
 const { Op } = require("sequelize");
-const { isEmailValid } = require("../utils/util");
+const { isEmailValid, errorMsg } = require("../utils/util");
 const axios = require("axios");
 const paymentRepo = require("../repositories/payments");
 const {
@@ -26,31 +26,15 @@ const createReference = () => {
 const initPayment = async (data) => {
   const { email, amount, shipmentId } = data;
   try {
-    if (!email || !amount) {
-      const error = new Error("Email and amount are required");
-      error.status = 400;
-      throw error;
-    }
+    if (!email || !amount) errorMsg("Email and amount are required");
 
-    if (!isEmailValid(email)) {
-      const error = new Error("Invalid email");
-      error.status = 400;
-      throw error;
-    }
+    if (!isEmailValid(email)) errorMsg("Invalid email");
 
     const user = await userRepo.findByEmail(email);
-    if (!user) {
-      const error = new Error("User not found");
-      error.status = 404;
-      throw error;
-    }
+    if (!user) errorMsg("User not found", 404);
 
     const shipment = await shipmentRepo.findById(shipmentId);
-    if (!shipment) {
-      const error = new Error("Shipment not found");
-      error.status = 404;
-      throw error;
-    }
+    if (!shipment) errorMsg("Shipment not found", 404);
 
     const reference = createReference();
     const parsedAmount = parseInt(amount) * 100;
@@ -64,11 +48,7 @@ const initPayment = async (data) => {
       email,
     };
 
-    if (!secretKey) {
-      const error = new Error("Secret key not found");
-      error.status = 404;
-      throw error;
-    }
+    if (!secretKey) errorMsg("Secret key not found", 404);
 
     // Paystack Payment Initialization API Call
     const { data } = await axios.post(
@@ -122,28 +102,16 @@ const handlePaymentSuccess = async (data) => {
       transaction,
       lock: transaction.LOCK.UPDATE,
     });
-    if (!payment) {
-      const error = new Error("Payment not found");
-      error.status = 404;
-      throw error;
-    }
+    if (!payment) errorMsg("Payment not found", 404);
 
-    if (payment.status === "completed") {
-      const error = new Error("Payment already processed");
-      error.status = 400;
-      throw error;
-    }
+    if (payment.status === "completed") errorMsg("Payment already processed");
 
     const shipment = await shipmentRepo.findById(shipmentId, {
       transaction,
       lock: transaction.LOCK.UPDATE,
     });
 
-    if (!shipment) {
-      const error = new Error("Shipment not found");
-      error.status = 404;
-      throw error;
-    }
+    if (!shipment) errorMsg("Shipment not found", 404);
 
     await payment.update(
       {
@@ -192,27 +160,15 @@ const handlePaymentFailure = async (data) => {
       transaction,
       lock: transaction.LOCK.UPDATE,
     });
-    if (!payment) {
-      const error = new Error("Payment not found");
-      error.status = 404;
-      throw error;
-    }
+    if (!payment) errorMsg("Payment not found", 404);
 
-    if (payment.status === "failed") {
-      const error = new Error("Payment already processed");
-      error.status = 400;
-      throw error;
-    }
+    if (payment.status === "failed") errorMsg("Payment already processed");
 
     const shipment = await shipmentRepo.findById(shipmentId, {
       transaction,
       lock: transaction.LOCK.UPDATE,
     });
-    if (!shipment) {
-      const error = new Error("Shipment not found");
-      error.status = 404;
-      throw error;
-    }
+    if (!shipment) errorMsg("Shipment not found", 404);
 
     await payment.update(
       {
@@ -300,7 +256,9 @@ const userPaymentsHistory = async (query, userId) => {
       model: db.shipments,
       as: "shipment",
       attributes: ["trackingNumber"],
+      required: true,
     },
+    distinct: true,
     limit,
     offset,
     order: [["createdAt", "DESC"]],
@@ -322,11 +280,7 @@ const userPaymentsHistory = async (query, userId) => {
 };
 
 const getById = async (id, userId) => {
-  if (!id) {
-    const error = new Error("Payment id is required");
-    error.status = 400;
-    throw error;
-  }
+  if (!id) errorMsg("Payment id is required");
 
   const payment = await paymentRepo.findOne({
     where: { id, userId },
@@ -345,11 +299,7 @@ const getById = async (id, userId) => {
     },
   });
 
-  if (!payment) {
-    const error = new Error("Payment not found");
-    error.status = 404;
-    throw error;
-  }
+  if (!payment) errorMsg("Payment not found", 404);
 
   return {
     id: payment.id,

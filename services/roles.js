@@ -1,6 +1,7 @@
 const roleRepo = require("../repositories/role");
 const { Op } = require("sequelize");
 const db = require("../models");
+const { errorMsg } = require("../utils/util");
 
 /**
  * Create a role
@@ -12,11 +13,8 @@ const db = require("../models");
 const create = async (data) => {
   const { name, desc } = data;
   const role = await roleRepo.findOne({ where: { name } });
-  if (role) {
-    const error = new Error("Role already exists");
-    error.status = 409;
-    throw error;
-  }
+  if (role) errorMsg("Role already exists", 409);
+
   const tolower = name.trim().toLowerCase();
   return roleRepo.create({ name: tolower, desc });
 };
@@ -46,11 +44,7 @@ const update = async (id, data) => {
  */
 const getById = async (id) => {
   const role = await roleRepo.findOne({ where: { id } });
-  if (!role) {
-    const error = new Error("Role not found");
-    error.status = 404;
-    throw error;
-  }
+  if (!role) errorMsg("Role not found", 404);
   return role;
 };
 
@@ -95,11 +89,8 @@ const getAll = async (query) => {
 const remove = async (id) => {
   const role = await getById(id);
   const user = await db.users.findOne({ where: { roleId: id } });
-  if (user) {
-    const error = new Error("Role is in use");
-    error.status = 409;
-    throw error;
-  }
+  if (user) errorMsg("Role is assigned to a user", 400);
+  
   await role.destroy();
   return id;
 };

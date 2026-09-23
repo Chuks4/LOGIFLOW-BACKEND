@@ -71,7 +71,7 @@ const rotateRefreshToken = async (token, jti, user, options = {}) => {
     status: user.status,
   };
   const accessToken = signAccessToken(payload);
-  const refreshToken = signRefreshToken(payload, jti)
+  const refreshToken = signRefreshToken(payload, jti);
   await createRefreshToken({
     user,
     refreshToken,
@@ -143,6 +143,12 @@ const trimData = (data) => {
   return obj;
 };
 
+const errorMsg = (message, code = 400) => {
+  const error = new Error(message);
+  error.status = code;
+  throw error;
+};
+
 module.exports = {
   signAccessToken,
   signRefreshToken,
@@ -155,5 +161,6 @@ module.exports = {
   isUserAtLeastEighteen,
   deleteFile,
   generateTrackingNumber,
-  trimData
+  trimData,
+  errorMsg,
 };
