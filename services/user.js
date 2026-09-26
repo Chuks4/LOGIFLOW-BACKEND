@@ -7,6 +7,7 @@ const {
   isUserAtLeastEighteen,
   errorMsg,
 } = require("../utils/util");
+const bcrypt = require("bcrypt");
 
 /**
  * Get customers
@@ -160,9 +161,26 @@ const updateUserStatus = async (id, status) => {
   });
 };
 
+const changePassword = async (id, data) => {
+  const user = await userRepository.findById(id);
+  const { oldPassword, newPassword } = data;
+  if (!user) errorMsg("User not found", 404);
+
+  const confirmPassword = await bcrypt.compare(oldPassword, user.password);
+  if (!confirmPassword) errorMsg("Incorrect password");
+
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+  await user.update({ password: passwordHash });
+
+  return await userRepository.findById(id, {
+    attributes: { exclude: ["password"] },
+  });
+};
+
 module.exports = {
   getCustomers,
   getUserById,
   updateUser,
   updateUserStatus,
+  changePassword,
 };

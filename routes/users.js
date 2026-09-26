@@ -1,7 +1,123 @@
 const router = require("express").Router();
 const userController = require("../controllers/users");
-const {authAccess} = require("../middlewares/authAccess");
+const { authAccess } = require("../middlewares/authAccess");
 const handleUpload = require("../middlewares/uploads");
+
+/**
+ * @swagger
+ * /api/v1/users/me:
+ *   get:
+ *     summary: Get authenticated user
+ *     tags:
+ *       - Users
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Role retrieved successfully
+ *
+ *       401:
+ *         description: Unauthorized - No token provided
+ *
+ *       403:
+ *         description: Forbidden
+ *
+ *       404:
+ *         description: Not found
+ *
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/me", authAccess, userController.getMe);
+
+/**
+ * @swagger
+ * /api/v1/users/me:
+ *   put:
+ *     summary: Update authenticated user
+ *     tags:
+ *       - Users
+ *     security:
+ *       - BearerAuth: []
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *                 example: Chukwuemeka
+ *               lastName:
+ *                 type: string
+ *                 example: Agha
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: user@example.com
+ *               phoneNumber:
+ *                 type: string
+ *                 example: "+2348012345678"
+ *               gender:
+ *                 type: string
+ *                 example: male
+ *               dob:
+ *                 type: string
+ *                 format: date
+ *                 example: "1998-05-20"
+ *               address:
+ *                 type: string
+ *                 example: 12 Allen Avenue
+ *               city:
+ *                 type: string
+ *                 example: Ikeja
+ *               state:
+ *                 type: string
+ *                 example: Lagos
+ *               country:
+ *                 type: string
+ *                 example: Nigeria
+ *               image:
+ *                 type: string
+ *                 description: Profile image to upload
+ *     responses:
+ *       200:
+ *         description: User updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   description: Updated user details
+ *       400:
+ *         description: Invalid request data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Invalid request data
+ *       401:
+ *         description: Unauthorized - Authentication token is missing or invalid
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+router.put("/me", authAccess, handleUpload, userController.updateMe);
 
 /**
  * @swagger
@@ -20,7 +136,7 @@ const handleUpload = require("../middlewares/uploads");
  *         required: false
  *         schema:
  *           type: string
- * 
+ *
  *       - in: query
  *         name: filterByRoles
  *         description: Filter by role role (customer:customer, driver:driver)
@@ -59,7 +175,7 @@ const handleUpload = require("../middlewares/uploads");
  *       500:
  *         description: Internal server error
  */
-router.get("/",  userController.getCustomers);
+router.get("/", userController.getCustomers);
 
 /**
  * @swagger
@@ -247,5 +363,61 @@ router.put("/:id", authAccess, handleUpload, userController.update);
  *         description: Internal server error
  */
 router.patch("/:id/status", authAccess, userController.updateStatus);
+
+/**
+ * @swagger
+ * /api/v1/users/change-password:
+ *   patch:
+ *     summary: Change password for the authenticated user
+ *     tags:
+ *       - Users
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               oldPassword:
+ *                 type: password
+ *               newPassword:
+ *                 type: password
+ *     responses:
+ *       200:
+ *         description: Password changed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   description: Updated user details
+ *       400:
+ *         description: Invalid request data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Invalid request data
+ *       401:
+ *         description: Unauthorized - Authentication token is missing or invalid
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+router.patch("/change-password", authAccess, userController.changePassword);
 
 module.exports = router;
