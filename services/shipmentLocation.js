@@ -8,7 +8,6 @@ const { errorMsg } = require("../utils/util");
 
 const ALLOWED_STATUSES = ["Picked Up", "In Transit", "Assigned"];
 const RESOURCE = "shipments";
-const ACTION = "track";
 
 /**
  * Create a shipment location
@@ -78,7 +77,7 @@ const canViewShipmentLocation = async (user, shipmentId) => {
     errorMsg("Shipment is not in transit");
   }
 
-  const allowed = await can(roleId, RESOURCE, ACTION);
+  const allowed = await can(roleId, RESOURCE, "track");
   if (!allowed) {
     errorMsg("You are not authorized to perform this action", 403);
   }
@@ -102,7 +101,7 @@ const canUpdateShipmentLocation = async (user, shipmentId) => {
     errorMsg("Shipment is not in transit");
   }
 
-  const allowed = await can(roleId, RESOURCE, ACTION);
+  const allowed = await can(roleId, RESOURCE, "update");
   if (!allowed) errorMsg("You are not authorized to perform this action", 403);
 
   if (shipment.driverId !== id)

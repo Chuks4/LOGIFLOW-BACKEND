@@ -54,6 +54,7 @@ db.role_permission = require("./role_permissions")(DataTypes, sequelize);
 db.payments = require("./payment")(DataTypes, sequelize);
 db.webhookEvents = require("./webhookEvent")(DataTypes, sequelize);
 db.shipmentLocations = require("./shipmentLocation")(DataTypes, sequelize);
+db.notifications = require("./notifications")(DataTypes, sequelize);
 
 // RelationShips
 

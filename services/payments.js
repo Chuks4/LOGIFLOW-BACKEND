@@ -15,6 +15,8 @@ const { enqueuePaymentUpdateMail } = require("../queues/email");
 const {
   paymentStatusMail,
 } = require("../utils/emailTemplates/paymentStatusMail");
+const { createNotification } = require("./notifications");
+const { NOTIFICATION_TYPES } = require("../constants/notifications");
 
 const createReference = () => {
   // Generate a unique reference for the payment
@@ -143,6 +145,16 @@ const handlePaymentSuccess = async (data) => {
     };
     enqueuePaymentUpdateMail(mailOption);
 
+    // Emit notification to customer
+    await createNotification({
+      type: NOTIFICATION_TYPES.payments.PAYMENT_SUCCESS.title,
+      userId: customer.id,
+      message: NOTIFICATION_TYPES.payments.PAYMENT_SUCCESS.message,
+      title: NOTIFICATION_TYPES.payments.PAYMENT_SUCCESS.title
+        .split("_")
+        .join(" "),
+    });
+
     return {
       status: "success",
       message: "Payment processed successfully",
@@ -194,6 +206,16 @@ const handlePaymentFailure = async (data) => {
       }),
     };
     enqueuePaymentUpdateMail(mailOption);
+
+    // Emit notification to customer
+    await createNotification({
+      type: NOTIFICATION_TYPES.payments.PAYMENT_FAILED.title,
+      userId: customer.id,
+      message: NOTIFICATION_TYPES.payments.PAYMENT_FAILED.message,
+      title: NOTIFICATION_TYPES.payments.PAYMENT_FAILED.title
+        .split("_")
+        .join(" "),
+    });
 
     return {
       status: "failed",

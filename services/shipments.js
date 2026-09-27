@@ -7,6 +7,8 @@ const shipmentStatusHistoryRepo = require("../repositories/shipments_status_hist
 const db = require("../models");
 const { enqueueShipmentUpdateEmail } = require("../queues/email");
 const shipmentUpdateMail = require("../utils/emailTemplates/shipmentUpdateMail");
+const { createNotification } = require("../services/notifications");
+const { NOTIFICATION_TYPES } = require("../constants/notifications");
 
 const STATUS_HISTORY_MAPPING = {
   Pending: {
@@ -69,7 +71,8 @@ const recordStatusHistory = async (shipmentId, status, options = {}) => {
   });
 
   if (record) {
-    return await record.update({ event, notes }, { transaction });
+    await record.update({ event, notes }, { transaction });
+    return await shipmentStatusHistoryRepo.findById(record.id, { transaction });
   } else {
     return await shipmentStatusHistoryRepo.create(
       {
@@ -125,6 +128,15 @@ const updateStatus = async (userId, shipmentId, status) => {
         }),
       });
     }
+
+    // Emit notification to customer
+    await createNotification({
+      type: NOTIFICATION_TYPES.shipments[status]?.title,
+      userId: customer.id,
+      message: NOTIFICATION_TYPES.shipments[status]?.message,
+      title: NOTIFICATION_TYPES.shipments[status]?.title.split("_").join(" "),
+    });
+
     return await shipItemsRepository.findById(shipmentId, { transaction });
   });
 };
@@ -179,6 +191,15 @@ const assignDriverShipment = async (dispatcherId, shipmentId, driverId) => {
         }),
       });
     }
+
+    // Emit notification to customer
+    await createNotification({
+      type: NOTIFICATION_TYPES.shipments.Assigned.title,
+      userId: customer.id,
+      message: NOTIFICATION_TYPES.shipments.Assigned.message,
+      title: NOTIFICATION_TYPES.shipments.Assigned.title.split("_").join(" "),
+    });
+
     return await shipmentRepository.findById(shipmentId, { transaction });
   });
 };
@@ -224,9 +245,18 @@ const create = async (data, customerId) => {
       { ...data, trackingNumber, customerId },
       { transaction },
     );
+
     await recordStatusHistory(shipment.id, "Pending", {
       updatedBy: "system",
       transaction,
+    });
+
+    // Emit notification to customer
+    await createNotification({
+      type: NOTIFICATION_TYPES.shipments.Pending.title,
+      userId: customer.id,
+      message: NOTIFICATION_TYPES.shipments.Pending.message,
+      title: NOTIFICATION_TYPES.shipments.Pending.title.split("_").join(" "),
     });
 
     //   Create a shipment_item entry for every item
