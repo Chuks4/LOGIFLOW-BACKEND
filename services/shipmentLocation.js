@@ -5,6 +5,7 @@ const driverRepo = require("../repositories/user");
 const { can } = require("../services/rbac");
 const db = require("../models");
 const { errorMsg } = require("../utils/util");
+const { getSocketIO } = require("../sockets");
 
 const ALLOWED_STATUSES = ["Picked Up", "In Transit", "Assigned"];
 const RESOURCE = "shipments";
@@ -33,6 +34,7 @@ const createShipmentLocation = async (data) => {
     heading,
     accuracy,
   } = trimData(data);
+  const io = getSocketIO();
 
   if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
     errorMsg("Invalid coordinates");
@@ -51,7 +53,7 @@ const createShipmentLocation = async (data) => {
   if (shipment.driverId !== driverId)
     errorMsg("Driver is not assigned to this shipment");
 
-  const shipmentLocation = await ShipmentLocationRepo.create({
+  const location = await ShipmentLocationRepo.create({
     shipmentId,
     latitude,
     longitude,
@@ -62,7 +64,13 @@ const createShipmentLocation = async (data) => {
     accuracy,
   });
 
-  return shipmentLocation;
+  io.to(`shipment:${shipmentId}`).emit("receive-location", {
+    shipmentId,
+    driverId,
+    location,
+  });
+
+  return location;
 };
 
 const canViewShipmentLocation = async (user, shipmentId) => {

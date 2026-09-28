@@ -377,16 +377,19 @@ Completed
 ```
 
 ├── config
+├── constants
 ├── controllers
 ├── logger
 ├── middlewares
 ├── models
 ├── queues
 ├── repositories
+├── routes
 ├── services
+├── sockets
 ├── utils
 ├── validators
-├── routes
+├── workers
 
 ---
 
@@ -425,8 +428,8 @@ Supporting Services
 - Redis
 - BullMQ
 <!-- - Cloudinary -->
-<!-- - Socket.io -->
-<!-- - Paystack -->
+- Socket.io
+- Paystack
 - Nodemailer
 
 ---

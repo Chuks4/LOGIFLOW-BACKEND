@@ -11,6 +11,7 @@ const roleRouter = require("./routes/roles");
 const paymentRouter = require("./routes/payments");
 const analyticsRouter = require("./routes/analytics");
 const locationRouter = require("./routes/locations");
+const notificationRouter = require("./routes/notifications");
 
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdocs = require("swagger-jsdoc");
@@ -119,5 +120,6 @@ app.use("/api/v1/roles", roleRouter);
 app.use("/api/v1/payments", paymentRouter);
 app.use("/api/v1/analytics", analyticsRouter);
 app.use("/api/v1/locations", locationRouter);
+app.use("/api/v1/notifications", notificationRouter);
 
 module.exports = app;

@@ -200,6 +200,14 @@ const assignDriverShipment = async (dispatcherId, shipmentId, driverId) => {
       title: NOTIFICATION_TYPES.shipments.Assigned.title.split("_").join(" "),
     });
 
+    // Emit notification to driver
+    await createNotification({
+      type: NOTIFICATION_TYPES.shipments.Assigned.title,
+      userId: driverId,
+      message: "You have been assigned a shipment",
+      title: NOTIFICATION_TYPES.shipments.Assigned.title.split("_").join(" "),
+    });
+
     return await shipmentRepository.findById(shipmentId, { transaction });
   });
 };

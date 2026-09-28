@@ -8,7 +8,7 @@ require("./workers/payment"); // Start the payment worker
 const { logger } = require("./logger/logger");
 const fs = require("fs");
 const db = require("./models");
-const { socketAuth } = require("./middlewares/socketAuth");
+const { socketAuth } = require("./sockets/socketAuth");
 const {
   createShipmentLocation,
   canViewShipmentLocation,
@@ -61,7 +61,7 @@ socketIO.on("connection", (socket) => {
       // Ensures that the user was assigned the shipment and is a driver
       await canUpdateShipmentLocation(socket.user, data.shipmentId);
 
-      const location = await createShipmentLocation({
+      await createShipmentLocation({
         shipmentId: data.shipmentId,
         driverId: socket.user.id,
         latitude: data.latitude,
@@ -70,12 +70,6 @@ socketIO.on("connection", (socket) => {
         speed: data.speed,
         heading: data.heading,
         timestamp: data.timestamp,
-      });
-
-      socketIO.to(`shipment:${data.shipmentId}`).emit("receive-location", {
-        shipmentId: data.shipmentId,
-        driverId: socket.user.id,
-        location,
       });
     } catch (error) {
       socket.emit("tracking-error", {

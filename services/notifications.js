@@ -7,7 +7,7 @@ const createNotification = async (notification) => {
   const { type, userId, message, title } = notification;
 
   const socket = getSocketIO();
-  const notification = await notificationRepo.create({
+  const createdNotification = await notificationRepo.create({
     type,
     userId,
     message,
@@ -20,9 +20,9 @@ const createNotification = async (notification) => {
 
   socket
     .to(`user:${userId}`)
-    .emit("notification:new", { ...notification.dataValues, count });
+    .emit("notification:new", { ...createdNotification.dataValues, count });
 
-  return notification;
+  return createdNotification;
 };
 
 const getUserNotifications = async (userId) => {
@@ -33,8 +33,10 @@ const getUserNotifications = async (userId) => {
   return notifications;
 };
 
-const markAsRead = async (notificationId) => {
-  const notification = await db.notifications.findByPk(notificationId);
+const markAsRead = async (notificationId, userId) => {
+  const notification = await db.notifications.findOne({
+    where: { id: notificationId, userId },
+  });
   if (!notification) errorMsg("Notification not found", 404);
   await notification.update({ isRead: true });
   return await notificationRepo.findById(notificationId);
