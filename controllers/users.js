@@ -45,6 +45,7 @@ const update = async (req, res) => {
     );
     return res.status(200).json({ status: true, data: user });
   } catch (error) {
+    console.log("Error ", error);
     if (error.status) {
       return res
         .status(error.status)

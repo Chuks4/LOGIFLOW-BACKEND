@@ -243,6 +243,8 @@ router.get("/:id", authAccess, userController.getById);
  *                 type: string
  *                 format: email
  *                 example: user@example.com
+ *               roleId:
+ *                type: string
  *               phoneNumber:
  *                 type: string
  *                 example: "+2348012345678"

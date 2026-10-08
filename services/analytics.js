@@ -1,4 +1,3 @@
-const { Op } = require("sequelize");
 const db = require("../models");
 
 const getOverview = async (userId) => {
@@ -42,4 +41,117 @@ const getOverview = async (userId) => {
   };
 };
 
-module.exports = { getOverview };
+const getAdminDashboardAnalytics = async () => {
+  const [stats] = await db.sequelize.query(
+    `
+  SELECT
+    COUNT(id) FILTER (
+      WHERE "status" = 'In Transit'
+    ) AS "inTransit",
+     
+    COUNT(id) FILTER (
+      WHERE "status" IN ('Pending')
+    ) AS "pendingShipments",
+
+    COUNT(id) FILTER (
+      WHERE "status" IN ('Confirmed')
+    ) AS "confirmedShipments",
+     
+    COUNT(id) FILTER (
+      WHERE "status"  IN ('Assigned')
+    ) AS "assignedShipments",
+
+    COUNT(id) FILTER (
+      WHERE "status" IN ('Picked Up')
+    ) AS "pickedUpShipments",
+
+    COUNT(id) FILTER (
+      WHERE "status" NOT IN ('Delivered')
+    ) AS "deliveredShipments"
+
+FROM shipments
+  `,
+    {
+      type: db.sequelize.QueryTypes.SELECT,
+    },
+  );
+
+  const {
+    deliveredShipments,
+    pickedUpShipments,
+    assignedShipments,
+    confirmedShipments,
+    pendingShipments,
+    inTransit,
+    totalShipments,
+  } = stats;
+
+  return {
+    deliveredShipments,
+    pickedUpShipments,
+    assignedShipments,
+    confirmedShipments,
+    pendingShipments,
+    inTransit,
+    totalShipments,
+  };
+};
+
+const getDispatcherDashboardAnalytics = async (userId) => {
+  const [stats] = await db.sequelize.query(
+    `
+  SELECT
+    COUNT(id) FILTER (
+      WHERE "status" = 'In Transit'
+    ) AS "inTransit",
+     
+    COUNT(id) FILTER (
+      WHERE "status" IN ('Pending')
+    ) AS "pendingShipments",
+
+    COUNT(id) FILTER (
+      WHERE "status" IN ('Confirmed')
+    ) AS "confirmedShipments",
+     
+    COUNT(id) FILTER (
+      WHERE "status"  IN ('Assigned')
+    ) AS "assignedShipments",
+
+    COUNT(id) FILTER (
+      WHERE "status" IN ('Picked Up')
+    ) AS "pickedUpShipments",
+
+    COUNT(id) FILTER (
+      WHERE "status" NOT IN ('Delivered')
+    ) AS "deliveredShipments"
+
+FROM shipments WHERE "dispatcherId" = :userId
+  `,
+    {
+      type: db.sequelize.QueryTypes.SELECT,
+      replacements: {userId}
+    },
+  );
+
+  const {
+    deliveredShipments,
+    pickedUpShipments,
+    assignedShipments,
+    confirmedShipments,
+    pendingShipments,
+    inTransit,
+    totalShipments,
+  } = stats;
+
+  return {
+    deliveredShipments,
+    pickedUpShipments,
+    assignedShipments,
+    confirmedShipments,
+    pendingShipments,
+    inTransit,
+    totalShipments,
+  };
+};
+
+module.exports = { getOverview, getAdminDashboardAnalytics, getDispatcherDashboardAnalytics };

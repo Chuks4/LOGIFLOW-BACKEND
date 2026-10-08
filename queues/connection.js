@@ -1,11 +1,17 @@
 const { Redis } = require("ioredis");
 
-const connection = new Redis({
-  host: process.env.REDIS_HOST || "redis",
-  port: process.env.REDIS_PORT || 6379,
-  password: process.env.REDIS_PASSWORD || undefined,
-  maxRetriesPerRequest: null,
-  enableReadyCheck: false,
+const redis_url =
+  process.env.NODE_ENV === "production"
+    ? process.env.REDIS_URL_PROD
+    : process.env.REDIS_URL_DEV;
+
+const connection = new Redis(redis_url, {
+  maxRetriesPerRequest: null, // Disable max retries per request
+  enableReadyCheck: false, // Disable ready check
+});
+
+connection.on("connect", () => {
+  console.log("Redis connected");
 });
 
 module.exports = { connection };

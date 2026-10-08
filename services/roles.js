@@ -28,11 +28,16 @@ const create = async (data) => {
 const update = async (id, data) => {
   const { name, desc, isActive } = data;
   const role = await getById(id);
-  const toLower = name.trim().toLowerCase();
+  const toLower = name ? name.trim().toLowerCase() : role.name;
+  const existingRole = await roleRepo.findOne({ where: { name: toLower } });
+  if (existingRole && existingRole.id !== id) {
+    errorMsg("Role already exists", 409);
+  }
+
   await role.update({
-    name: toLower || role.name,
-    desc: desc || role.desc,
-    isActive: isActive || role.isActive,
+    name: toLower,
+    desc: desc !== undefined ? desc : role.desc,
+    isActive: isActive !== undefined ? isActive : role.isActive,
   });
   return getById(id);
 };
@@ -90,8 +95,20 @@ const remove = async (id) => {
   const role = await getById(id);
   const user = await db.users.findOne({ where: { roleId: id } });
   if (user) errorMsg("Role is assigned to a user", 400);
-  
-  await role.destroy();
+
+  const transaction = await db.sequelize.transaction();
+  try {
+    await db.role_permission.destroy({
+      where: { roleId: id },
+      transaction,
+    });
+    await role.destroy({ transaction });
+    await transaction.commit();
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
+
   return id;
 };
 

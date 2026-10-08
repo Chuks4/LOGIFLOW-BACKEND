@@ -162,6 +162,16 @@ const assignDriverShipment = async (dispatcherId, shipmentId, driverId) => {
       errorMsg("Invalid status transition");
     }
 
+    const hasShipmentAssigned = await shipmentRepository.findOne({
+      where: {
+        driverId,
+        status: { [Op.in]: ["Assigned", "Picked Up", "In Transit"] },
+      },
+      transaction,
+    });
+    if (hasShipmentAssigned)
+      errorMsg("Driver has an assigned shipment", 400);
+
     await shipment.update(
       { driverId, dispatcherId, status: "Assigned" },
       { transaction },

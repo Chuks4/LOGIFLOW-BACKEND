@@ -26,8 +26,6 @@ const ALLOWED_RESOURCES = Object.freeze({
   reports: "reports",
   settings: "settings",
   dashboard: "dashboard",
-  profile: "profile",
-  notifications: "notifications",
   messages: "messages",
 });
 

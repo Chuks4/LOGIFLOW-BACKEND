@@ -1,4 +1,5 @@
 const permsRepo = require("../repositories/permissions");
+const db = require("../models");
 const { ALLOWED_ACTIONS, ALLOWED_RESOURCES } = require("../constants/rbac");
 const { Op } = require("sequelize");
 const { errorMsg } = require("../utils/util");
@@ -44,22 +45,30 @@ const update = async (id, data) => {
 
   if (!permission) errorMsg("Permission not found");
 
-  const actionLower = action.trim().toLowerCase();
-  const resourceLower = resource.trim().toLowerCase();
+  const actionLower = action ? action.trim().toLowerCase() : permission.action;
+  const resourceLower = resource
+    ? resource.trim().toLowerCase()
+    : permission.resource;
 
   if (!Object.prototype.hasOwnProperty.call(ALLOWED_ACTIONS, actionLower)) {
     errorMsg("Invalid action");
   }
 
-  if (!Object.prototype.hasOwnProperty.call(ALLOWED_RESOURCES, resource)) {
+  if (!Object.prototype.hasOwnProperty.call(ALLOWED_RESOURCES, resourceLower)) {
     errorMsg("Invalid resource");
   }
 
+  const name = `${resourceLower}:${actionLower}`;
+  const existingPermission = await permsRepo.findOne({
+    where: { name, id: { [Op.ne]: id } },
+  });
+  if (existingPermission) errorMsg("Permission already exists", 409);
+
   await permission.update({
-    desc: desc || permission.desc,
-    resource: resourceLower || permission.resource,
-    action: actionLower || permission.action,
-    name: `${resourceLower}:${actionLower}` || permission.name,
+    desc: desc !== undefined ? desc : permission.desc,
+    resource: resourceLower,
+    action: actionLower,
+    name,
     isActive: isActive !== undefined ? isActive : permission.isActive,
   });
 
@@ -73,7 +82,19 @@ const remove = async (id) => {
 
   if (!permission) errorMsg("Permission not found", 404);
 
-  await permission.destroy();
+  const transaction = await db.sequelize.transaction();
+  try {
+    await db.role_permission.destroy({
+      where: { permissionId: id },
+      transaction,
+    });
+    await permission.destroy({ transaction });
+    await transaction.commit();
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
+
   return id;
 };
 

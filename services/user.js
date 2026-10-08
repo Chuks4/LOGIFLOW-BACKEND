@@ -8,6 +8,7 @@ const {
   errorMsg,
 } = require("../utils/util");
 const bcrypt = require("bcrypt");
+const roleRepository = require("../repositories/role");
 
 /**
  * Get customers
@@ -84,7 +85,10 @@ const getUserById = async (id) => {
  * @returns {Promise<Object>} - Updated user
  */
 const updateUser = async (id, data, file) => {
-  const user = await userRepository.findById(id);
+  const user = await userRepository.findById(id, {
+    include: { model: db.roles, as: "role", attributes: ["name"] },
+  });
+
   if (!user) {
     if (file) {
       deleteFile(file?.path);
@@ -103,11 +107,27 @@ const updateUser = async (id, data, file) => {
     state,
     city,
     address,
+    roleId,
   } = trimData(data);
 
   if (dob && !isUserAtLeastEighteen(dob)) {
     errorMsg("User must be at least 18 years old");
   }
+
+  // if (
+  //   roleId &&
+  //   roleId !== user.roleId &&
+  //   (user.role?.name === "driver" || user.role?.name === "customer")
+  // ) {
+  //   if (file) {
+  //     deleteFile(file?.path);
+  //   }
+
+  //   errorMsg("You cannot update a customer or driver's role", 403);
+  // }
+
+  const role = await roleRepository.findById(roleId);
+  if (!role) errorMsg("Role not found", 404);
 
   await userRepository.update(id, {
     url: file ? `api/uploads/${file?.path}` : user?.url,
@@ -120,9 +140,10 @@ const updateUser = async (id, data, file) => {
     state: state || user?.state,
     city: city || user?.city,
     address: address || user?.address,
+    roleId: roleId || user?.roleId,
   });
 
-  return userRepository.findById(id, {
+  return await userRepository.findById(id, {
     attributes: { exclude: ["password"] },
     include: {
       model: db.roles,
@@ -151,7 +172,7 @@ const updateUserStatus = async (id, status) => {
     status,
   });
 
-  return userRepository.findById(id, {
+  return await userRepository.findById(id, {
     attributes: { exclude: ["password"] },
     include: {
       model: db.roles,
