@@ -1,6 +1,13 @@
 const router = require("express").Router();
 const paymentController = require("../controllers/payment");
 const { authAccess } = require("../middlewares/authAccess");
+const rateLimiter = require("../middlewares/rateLimit");
+
+const initializePaymentRateLimiter = rateLimiter({
+  max: 10, // Limit each IP to 10 payment initialization requests per `time` window
+  message:
+    "Too many payment initialization attempts, please try again after 15 minutes",
+});
 
 /**
  * @swagger
@@ -72,7 +79,12 @@ const { authAccess } = require("../middlewares/authAccess");
  *       500:
  *         description: Internal server error
  */
-router.post("/initialize", authAccess, paymentController.initPayment);
+router.post(
+  "/initialize",
+  initializePaymentRateLimiter,
+  authAccess,
+  paymentController.initPayment,
+);
 
 router.post("/webhook", paymentController.processPaymentWebhooks);
 

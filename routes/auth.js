@@ -1,6 +1,12 @@
 const router = require("express").Router();
 const authController = require("../controllers/auth");
-const {authRefresh} = require("../middlewares/authAccess");
+const { authRefresh } = require("../middlewares/authAccess");
+const rateLimiter = require("../middlewares/rateLimit");
+
+const loginRateLimiter = rateLimiter({
+  max: 5, // Limit each IP to 5 login requests per `time` window
+  message: "Too many login attempts, please try again after 15 minutes",
+});
 
 const {
   validateLogin,
@@ -58,7 +64,7 @@ const {
  *       500:
  *         description: Internal server error
  */
-router.post("/login", validateLogin, authController.login);
+router.post("/login", loginRateLimiter, validateLogin, authController.login);
 
 /**
  * @swagger
@@ -68,7 +74,7 @@ router.post("/login", validateLogin, authController.login);
  *     description: Generates a new access token using the refresh token stored in the HTTP cookie.
  *     tags:
  *       - Auth
- *     security: 
+ *     security:
  *        - BearerAuth: []
  *     responses:
  *       200:
