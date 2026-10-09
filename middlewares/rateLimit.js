@@ -5,7 +5,7 @@ const rateLimiter = ({
   max = 100,
   message = "Too many requests, please try again later",
 }) =>
-  rateLimiter({
+  rateLimit({
     windowMs: time,
     max,
     message,
