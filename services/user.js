@@ -126,8 +126,15 @@ const updateUser = async (id, data, file) => {
   //   errorMsg("You cannot update a customer or driver's role", 403);
   // }
 
-  const role = await roleRepository.findById(roleId);
-  if (!role) errorMsg("Role not found", 404);
+  if (roleId) {
+    const role = await roleRepository.findById(roleId);
+    if (!role) {
+      if (file) {
+        deleteFile(file?.path);
+      }
+      errorMsg("Role not found", 404);
+    }
+  }
 
   await userRepository.update(id, {
     url: file ? `api/uploads/${file?.path}` : user?.url,

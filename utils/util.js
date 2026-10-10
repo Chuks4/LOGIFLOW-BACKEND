@@ -49,7 +49,7 @@ const setRefreshCookie = (option = {}, refreshToken) => {
   return res.cookie("refresh_token", refreshToken, {
     httpOnly: true,
     secure: isProd,
-    sameSite: "strict",
+    sameSite: isProd ? "none" : "lax",
     path: "/",
     maxAge: parseInt(REFRESH_TTL_SEC) * 1000,
   });
