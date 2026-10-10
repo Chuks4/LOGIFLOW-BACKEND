@@ -1,3 +1,5 @@
+require("dotenv").config({ path: "./config/.env" });
+
 module.exports = {
   pool: {
     max: parseInt(process.env.DB_MAX_CONNECTIONS),

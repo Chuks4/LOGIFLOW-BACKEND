@@ -108,8 +108,8 @@ const getAll = async (params) => {
 
   if (keyword) {
     query[Op.or] = [
-      { name: { $like: `%${keyword}%` } },
-      { desc: { $like: `%${keyword}%` } },
+      { name: { [Op.iLike]: `%${keyword}%` } },
+      { desc: { [Op.iLike]: `%${keyword}%` } },
     ];
   }
 
