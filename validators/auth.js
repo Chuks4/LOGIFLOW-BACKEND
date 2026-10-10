@@ -26,7 +26,7 @@ const validateRegister = [
     .trim()
     .notEmpty()
     .withMessage("Date of birth is required")
-    .isISO15924()
+    .isISO8601()
     .withMessage("Date of birth is not valid"),
   body("gender").trim().notEmpty().withMessage("Gender is required"),
   body("phoneNumber").trim().notEmpty().withMessage("Phone number is required"),

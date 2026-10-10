@@ -1,5 +1,23 @@
 const userServices = require("../services/user");
+const authService = require("../services/auth");
 const { deleteFile } = require("../utils/util");
+
+const create = async (req, res) => {
+  try {
+    const createdUser = await authService.register(req.body);
+    const user = await userServices.getUserById(createdUser.id);
+    return res.status(201).json({ status: true, data: user });
+  } catch (error) {
+    if (error.status) {
+      return res
+        .status(error.status)
+        .json({ status: false, message: error.message });
+    }
+    return res
+      .status(500)
+      .json({ status: false, message: "Internal server error" });
+  }
+};
 
 const getCustomers = async (req, res) => {
   try {
@@ -138,6 +156,7 @@ const changePassword = async (req, res) => {
 };
 
 module.exports = {
+  create,
   getMe,
   updateMe,
   getCustomers,

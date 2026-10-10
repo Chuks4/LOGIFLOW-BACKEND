@@ -1,7 +1,9 @@
 const router = require("express").Router();
 const userController = require("../controllers/users");
 const { authAccess } = require("../middlewares/authAccess");
+const { hasAccessTo } = require("../middlewares/authorize");
 const handleUpload = require("../middlewares/uploads");
+const { validateRegister } = require("../validators/auth");
 
 /**
  * @swagger
@@ -132,7 +134,7 @@ router.put("/me", authAccess, handleUpload, userController.updateMe);
  *     parameters:
  *       - in: query
  *         name: keyword
- *         description: Search by firstname or lastname
+ *         description: Search by firstname, lastname, or email
  *         required: false
  *         schema:
  *           type: string
@@ -176,6 +178,51 @@ router.put("/me", authAccess, handleUpload, userController.updateMe);
  *         description: Internal server error
  */
 router.get("/", userController.getCustomers);
+
+/**
+ * @swagger
+ * /api/v1/users:
+ *   post:
+ *     summary: Create a user
+ *     description: Creates a user and sends an email verification link.
+ *     tags:
+ *       - Users
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password, firstName, lastName, roleId, gender, dob, phoneNumber, address]
+ *             properties:
+ *               email: { type: string, format: email }
+ *               password: { type: string, format: password }
+ *               firstName: { type: string }
+ *               lastName: { type: string }
+ *               roleId: { type: string, format: uuid }
+ *               gender: { type: string }
+ *               dob: { type: string, format: date }
+ *               phoneNumber: { type: string }
+ *               country: { type: string }
+ *               state: { type: string }
+ *               city: { type: string }
+ *               address: { type: string }
+ *     responses:
+ *       201: { description: User created successfully }
+ *       401: { description: Unauthorized }
+ *       403: { description: Missing user:create permission }
+ *       409: { description: Email already exists }
+ *       500: { description: Internal server error }
+ */
+router.post(
+  "/",
+  authAccess,
+  hasAccessTo("user", "create"),
+  validateRegister,
+  userController.create,
+);
 
 /**
  * @swagger
@@ -304,7 +351,13 @@ router.get("/:id", authAccess, userController.getById);
  *       500:
  *         description: Internal server error
  */
-router.put("/:id", authAccess, handleUpload, userController.update);
+router.put(
+  "/:id",
+  authAccess,
+  hasAccessTo("user", "update"),
+  handleUpload,
+  userController.update,
+);
 
 /**
  * @swagger
@@ -364,7 +417,12 @@ router.put("/:id", authAccess, handleUpload, userController.update);
  *       500:
  *         description: Internal server error
  */
-router.patch("/:id/status", authAccess, userController.updateStatus);
+router.patch(
+  "/:id/status",
+  authAccess,
+  hasAccessTo("user", "update"),
+  userController.updateStatus,
+);
 
 /**
  * @swagger

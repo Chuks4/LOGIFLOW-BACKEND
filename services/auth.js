@@ -158,6 +158,9 @@ const register = async (data) => {
     gender,
     dob,
     phoneNumber,
+    country,
+    state,
+    city,
     address,
   } = data;
 
@@ -189,6 +192,9 @@ const register = async (data) => {
     gender,
     dob,
     phoneNumber,
+    country,
+    state,
+    city,
     address,
   });
 

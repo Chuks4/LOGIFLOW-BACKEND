@@ -18,7 +18,7 @@ const roleRepository = require("../repositories/role");
 const getCustomers = async (query) => {
   const page = query.page ? parseInt(query.page) : 1;
   const limit = query.limit ? parseInt(query.limit) : 10;
-  const search = query.search ? query.keyword : "";
+  const search = query.keyword || query.search || "";
   const offset = (page - 1) * limit;
   const filterByRoles = query.filterByRoles ? query.filterByRoles : "";
   const where = {};
@@ -27,6 +27,7 @@ const getCustomers = async (query) => {
     where[Op.or] = [
       { firstName: { [Op.iLike]: `%${search}%` } },
       { lastName: { [Op.iLike]: `%${search}%` } },
+      { email: { [Op.iLike]: `%${search}%` } },
     ];
   }
 
@@ -35,9 +36,7 @@ const getCustomers = async (query) => {
     include: {
       model: db.roles,
       as: "role",
-      where: {
-        name: filterByRoles ? filterByRoles : { [Op.ne]: "super_admin" },
-      },
+      ...(filterByRoles ? { where: { name: filterByRoles } } : {}),
       required: true,
       attributes: ["name"],
     },
@@ -69,7 +68,7 @@ const getUserById = async (id) => {
     include: {
       model: db.roles,
       as: "role",
-      attributes: ["name"],
+      attributes: ["id", "name"],
     },
   });
 
@@ -155,7 +154,7 @@ const updateUser = async (id, data, file) => {
     include: {
       model: db.roles,
       as: "role",
-      attributes: ["name"],
+      attributes: ["id", "name"],
     },
   });
 };
@@ -170,9 +169,9 @@ const updateUserStatus = async (id, status) => {
   const user = await userRepository.findById(id);
   if (!user) errorMsg("User not found", 404);
 
-  const ALLOWED_STATUSES = ["active", "suspended"];
+  const ALLOWED_STATUSES = ["active", "pending", "suspended"];
   if (!ALLOWED_STATUSES.includes(status)) {
-    errorMsg("Invalid status. Allowed statuses are: active, suspended");
+    errorMsg("Invalid status. Allowed statuses are: active, pending, suspended");
   }
 
   await userRepository.update(id, {
