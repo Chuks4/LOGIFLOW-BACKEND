@@ -1,8 +1,9 @@
 const router = require("express").Router();
-const {authAccess} = require("../middlewares/authAccess");
+const { authAccess } = require("../middlewares/authAccess");
 const geoapifyController = require("../controllers/geoapify");
 const { validateCalculateShipmentCost } = require("../validators/geoapify");
 const { body } = require("express-validator");
+const { hasAccessTo } = require("../middlewares/authorize");
 
 /**
  * @swagger
@@ -37,7 +38,7 @@ const { body } = require("express-validator");
  *              pickupLng:
  *                type: number
  *                example: 4.578667
- * 
+ *
  *    responses:
  *      200:
  *        description: Success
@@ -51,6 +52,7 @@ const { body } = require("express-validator");
 router.post(
   "/",
   authAccess,
+  hasAccessTo("shipments", "create"),
   validateCalculateShipmentCost,
   geoapifyController.calculateShpimentCost,
 );
@@ -58,6 +60,7 @@ router.post(
 router.post(
   "/search",
   authAccess,
+  hasAccessTo("shipments", "create"),
   body("address").trim().notEmpty().withMessage("Address is required"),
   geoapifyController.searchAddress,
 );
