@@ -49,7 +49,7 @@ router.post(
   "/",
   authAccess,
   validateRole,
-  // hasAccessTo("role", "create"),
+  hasAccessTo("role", "create"),
   rolesController.create,
 );
 
@@ -145,7 +145,12 @@ router.get("/", rolesController.getAll);
  *       500:
  *         description: Internal server error
  */
-router.get("/:id", authAccess, rolesController.getById);
+router.get(
+  "/:id",
+  authAccess,
+  hasAccessTo("role", "read"),
+  rolesController.getById,
+);
 
 /**
  * @swagger
@@ -173,11 +178,11 @@ router.get("/:id", authAccess, rolesController.getById);
  *             properties:
  *               name:
  *                 type: super_admin
- *                 example: admin
+ *                 example: super_admin
  *               desc:
  *                 type: string
  *                 description: The role description
- *                 example: Admin role
+ *                 example: Super Admin Role
  *               isActive:
  *                 type: boolean
  *                 description: The role status (true:active, false:inactive)
@@ -198,7 +203,12 @@ router.get("/:id", authAccess, rolesController.getById);
  *       500:
  *         description: Internal server error
  */
-router.put("/:id", authAccess, rolesController.update);
+router.put(
+  "/:id",
+  authAccess,
+  hasAccessTo("role", "update"),
+  rolesController.update,
+);
 
 /**
  * @swagger
@@ -231,7 +241,12 @@ router.put("/:id", authAccess, rolesController.update);
  *       500:
  *         description: Internal server error
  */
-router.delete("/:id", authAccess, rolesController.remove);
+router.delete(
+  "/:id",
+  authAccess,
+  hasAccessTo("role", "delete"),
+  rolesController.remove,
+);
 
 /**
  * @swagger
@@ -283,6 +298,7 @@ router.delete("/:id", authAccess, rolesController.remove);
 router.post(
   "/:id/assign-permissions",
   authAccess,
+  hasAccessTo("role", "assign"),
   rolePermsController.assignPermissions,
 );
 
@@ -336,6 +352,7 @@ router.post(
 router.delete(
   "/:id/remove-permissions",
   authAccess,
+  hasAccessTo("role", "unassign"),
   rolePermsController.removePermissions,
 );
 
