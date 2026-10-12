@@ -177,7 +177,12 @@ router.put("/me", authAccess, handleUpload, userController.updateMe);
  *       500:
  *         description: Internal server error
  */
-router.get("/", userController.getCustomers);
+router.get(
+  "/",
+  authAccess,
+  hasAccessTo("users", "read"),
+  userController.getCustomers,
+);
 
 /**
  * @swagger
@@ -219,7 +224,7 @@ router.get("/", userController.getCustomers);
 router.post(
   "/",
   authAccess,
-  hasAccessTo("user", "create"),
+  hasAccessTo("users", "create"),
   validateRegister,
   userController.create,
 );
@@ -255,7 +260,12 @@ router.post(
  *       500:
  *         description: Internal server error
  */
-router.get("/:id", authAccess, userController.getById);
+router.get(
+  "/:id",
+  authAccess,
+  hasAccessTo("users", "read"),
+  userController.getById,
+);
 
 /**
  * @swagger
@@ -354,7 +364,7 @@ router.get("/:id", authAccess, userController.getById);
 router.put(
   "/:id",
   authAccess,
-  hasAccessTo("user", "update"),
+  hasAccessTo("users", "update"),
   handleUpload,
   userController.update,
 );
@@ -420,7 +430,7 @@ router.put(
 router.patch(
   "/:id/status",
   authAccess,
-  hasAccessTo("user", "update"),
+  hasAccessTo("users", "update"),
   userController.updateStatus,
 );
 
