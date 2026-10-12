@@ -2,6 +2,7 @@ const router = require("express").Router();
 const { authAccess } = require("../middlewares/authAccess");
 const permsController = require("../controllers/permissions");
 const { validatePermission } = require("../validators/rbac");
+const { hasAccessTo } = require("../middlewares/authorize");
 
 /**
  * @swagger
@@ -74,7 +75,13 @@ const { validatePermission } = require("../validators/rbac");
  *       '500':
  *         description: Internal server error
  */
-router.post("/", validatePermission, authAccess, permsController.create);
+router.post(
+  "/",
+  validatePermission,
+  authAccess,
+  hasAccessTo("permissions", "create"),
+  permsController.create,
+);
 
 /**
  * @swagger
@@ -158,7 +165,12 @@ router.post("/", validatePermission, authAccess, permsController.create);
  *       '500':
  *         description: Internal server error
  */
-router.put("/:id", authAccess, permsController.update);
+router.put(
+  "/:id",
+  authAccess,
+  hasAccessTo("permissions", "update"),
+  permsController.update,
+);
 
 /**
  * @swagger
@@ -205,7 +217,12 @@ router.put("/:id", authAccess, permsController.update);
  *       '500':
  *         description: Internal server error
  */
-router.delete("/:id", authAccess, permsController.remove);
+router.delete(
+  "/:id",
+  authAccess,
+  hasAccessTo("permissions", "delete"),
+  permsController.remove,
+);
 
 /**
  * @swagger
@@ -252,7 +269,11 @@ router.delete("/:id", authAccess, permsController.remove);
  *       '500':
  *         description: Internal server error
  */
-router.get("/role/:roleId", permsController.geAllByRoleId);
+router.get(
+  "/role/:roleId",
+  hasAccessTo("permissions", "read"),
+  permsController.geAllByRoleId,
+);
 
 /**
  * @swagger
@@ -313,6 +334,11 @@ router.get("/role/:roleId", permsController.geAllByRoleId);
  *       500:
  *         description: Internal server error
  */
-router.get("/", permsController.getAll);
+router.get(
+  "/",
+  authAccess,
+  hasAccessTo("permissions", "read"),
+  permsController.getAll,
+);
 
 module.exports = router;
