@@ -2,6 +2,7 @@ const router = require("express").Router();
 const paymentController = require("../controllers/payment");
 const { authAccess } = require("../middlewares/authAccess");
 const rateLimiter = require("../middlewares/rateLimit");
+const { hasAccess } = require("../middlewares/authorize");
 
 const initializePaymentRateLimiter = rateLimiter({
   max: 10, // Limit each IP to 10 payment initialization requests per `time` window
@@ -83,6 +84,7 @@ router.post(
   "/initialize",
   initializePaymentRateLimiter,
   authAccess,
+  hasAccess("payment", "create"),
   paymentController.initPayment,
 );
 
@@ -146,7 +148,12 @@ router.post("/webhook", paymentController.processPaymentWebhooks);
  *       500:
  *         description: Internal server error
  */
-router.get("/user", authAccess, paymentController.userPaymentsHistory);
+router.get(
+  "/user",
+  authAccess,
+  hasAccess("payment", "read"),
+  paymentController.userPaymentsHistory,
+);
 
 /**
  * @swagger
@@ -180,6 +187,11 @@ router.get("/user", authAccess, paymentController.userPaymentsHistory);
  *       500:
  *         description: Internal server error
  */
-router.get("/user/:id", authAccess, paymentController.getById);
+router.get(
+  "/user/:id",
+  authAccess,
+  hasAccess("payment", "read"),
+  paymentController.getById,
+);
 
 module.exports = router;
