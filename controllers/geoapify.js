@@ -7,7 +7,6 @@ const calculateShpimentCost = async (req, res) => {
     );
     res.status(200).json({ status: true, data: result });
   } catch (error) {
-    console.log("Error ", error)
     if (error.status) {
       return res
         .status(error.status)

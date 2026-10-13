@@ -7,7 +7,6 @@ const assignPermissions = async (req, res) => {
     const rolePermission = await rolePerm.assignPermissions(id, permissionIds);
     res.status(201).json({ status: true, data: rolePermission });
   } catch (error) {
-    console.log("Error", error)
     if (error.status) {
       return res
         .status(error.status)
@@ -25,7 +24,6 @@ const removePermissions = async (req, res) => {
     const rolePermission = await rolePerm.removePermissions(id, permissionIds);
     return res.status(201).json({ status: true, data: rolePermission });
   } catch (error) {
-    console.log("Error", error)
     if (error.status) {
       return res
         .status(error.status)

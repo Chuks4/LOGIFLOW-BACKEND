@@ -34,7 +34,6 @@ socketIO.use(socketAuth);
 
 // Socket.io connection handling
 socketIO.on("connection", (socket) => {
-  console.log(`User ${socket.user.id} connected: ${socket.id}`);
 
   // Personal room for notifications
   socket.join(`user:${socket.user.id}`);
@@ -46,8 +45,6 @@ socketIO.on("connection", (socket) => {
       await canViewShipmentLocation(socket.user, shipmentId);
 
       socket.join(`shipment:${shipmentId}`);
-
-      console.log(`User ${socket.user.id} joined shipment:${shipmentId}`);
     } catch (error) {
       socket.emit("tracking-error", {
         message: error.message,
@@ -79,7 +76,6 @@ socketIO.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    console.log(`User disconnected: ${socket.id}`);
   });
 });
 

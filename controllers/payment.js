@@ -16,7 +16,6 @@ const initPayment = async (req, res) => {
     });
     return res.status(200).json({ status: true, data });
   } catch (error) {
-    console.log("Error", error);
     if (error.status) {
       return res
         .status(error.status)
@@ -31,7 +30,6 @@ const initPayment = async (req, res) => {
 
 const processPaymentWebhooks = async (req, res) => {
   try {
-    console.log("Webhook received:", req.body);
     const body = req.body;
     const reference = body.data.reference;
     const eventType = body.event;
@@ -52,7 +50,6 @@ const processPaymentWebhooks = async (req, res) => {
     if (created) {
       // Enqueue payment webhook
       await enqueuePaymentWebhook(parsedBody);
-      console.log("Payment webhook enqueued");
       return res.send(200);
     }
 

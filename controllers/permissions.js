@@ -74,7 +74,6 @@ const getAll = async (req, res) => {
     const permissions = await permService.getAll(req.query);
     return res.status(200).json({ status: true, data: permissions });
   } catch (error) {
-    console.log("Error", error)
     if (error.status) {
       return res
         .status(error.status)
