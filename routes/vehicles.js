@@ -2,7 +2,7 @@ const vehicleController = require("../controllers/vehicle");
 const router = require("express").Router();
 const { validateCreateVehicle } = require("../validators/vehicles");
 const { authAccess } = require("../middlewares/authAccess");
-
+const { hasAccessTo } = require("../middlewares/authorize");
 
 /**
  * @swagger
@@ -94,7 +94,13 @@ const { authAccess } = require("../middlewares/authAccess");
  *       500:
  *         description: Internal server error
  */
-router.post("/", authAccess, validateCreateVehicle, vehicleController.create);
+router.post(
+  "/",
+  authAccess,
+  hasAccessTo("vehicles", "create"),
+  validateCreateVehicle,
+  vehicleController.create,
+);
 
 /**
  * @swagger
@@ -196,7 +202,12 @@ router.post("/", authAccess, validateCreateVehicle, vehicleController.create);
  *       500:
  *         description: Internal server error
  */
-router.get("/", authAccess, vehicleController.getAll);
+router.get(
+  "/",
+  authAccess,
+  hasAccessTo("vehicles", "read"),
+  vehicleController.getAll,
+);
 
 /**
  * @swagger
@@ -273,7 +284,12 @@ router.get("/", authAccess, vehicleController.getAll);
  *       500:
  *         description: Internal server error
  */
-router.get("/:id", authAccess, vehicleController.getById);
+router.get(
+  "/:id",
+  authAccess,
+  hasAccessTo("vehicles", "read"),
+  vehicleController.getById,
+);
 
 /**
  * @swagger
@@ -374,7 +390,12 @@ router.get("/:id", authAccess, vehicleController.getById);
  *       500:
  *         description: Internal server error
  */
-router.put("/:id", authAccess, vehicleController.update);
+router.put(
+  "/:id",
+  authAccess,
+  hasAccessTo("vehicles", "update"),
+  vehicleController.update,
+);
 
 /**
  * @swagger
@@ -460,7 +481,12 @@ router.put("/:id", authAccess, vehicleController.update);
  *       500:
  *         description: Internal server error
  */
-router.patch("/:id/driver", authAccess, vehicleController.assignDriver);
+router.patch(
+  "/:id/driver",
+  authAccess,
+  hasAccessTo("vehicles", "assign"),
+  vehicleController.assignDriver,
+);
 
 /**
  * @swagger
@@ -505,6 +531,11 @@ router.patch("/:id/driver", authAccess, vehicleController.assignDriver);
  *       500:
  *         description: Internal server error
  */
-router.delete("/:id", authAccess, vehicleController.deleteById);
+router.delete(
+  "/:id",
+  authAccess,
+  hasAccessTo("vehicles", "delete"),
+  vehicleController.deleteById,
+);
 
 module.exports = router;
