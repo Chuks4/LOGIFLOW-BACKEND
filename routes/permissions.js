@@ -271,7 +271,6 @@ router.delete(
  */
 router.get(
   "/role/:roleId",
-  hasAccessTo("permissions", "read"),
   permsController.geAllByRoleId,
 );
 
