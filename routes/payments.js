@@ -84,7 +84,7 @@ router.post(
   "/initialize",
   initializePaymentRateLimiter,
   authAccess,
-  hasAccessTo("payment", "create"),
+  hasAccessTo("payments", "create"),
   paymentController.initPayment,
 );
 
@@ -151,7 +151,7 @@ router.post("/webhook", paymentController.processPaymentWebhooks);
 router.get(
   "/user",
   authAccess,
-  hasAccessTo("payment", "read"),
+  hasAccessTo("payments", "read"),
   paymentController.userPaymentsHistory,
 );
 
@@ -190,7 +190,7 @@ router.get(
 router.get(
   "/user/:id",
   authAccess,
-  hasAccessTo("payment", "read"),
+  hasAccessTo("payments", "read"),
   paymentController.getById,
 );
 

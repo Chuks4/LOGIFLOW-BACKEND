@@ -49,7 +49,7 @@ router.post(
   "/",
   authAccess,
   validateRole,
-  hasAccessTo("role", "create"),
+  hasAccessTo("roles", "create"),
   rolesController.create,
 );
 
@@ -148,7 +148,7 @@ router.get("/", rolesController.getAll);
 router.get(
   "/:id",
   authAccess,
-  hasAccessTo("role", "read"),
+  hasAccessTo("roles", "read"),
   rolesController.getById,
 );
 
@@ -206,7 +206,7 @@ router.get(
 router.put(
   "/:id",
   authAccess,
-  hasAccessTo("role", "update"),
+  hasAccessTo("roles", "update"),
   rolesController.update,
 );
 
@@ -244,7 +244,7 @@ router.put(
 router.delete(
   "/:id",
   authAccess,
-  hasAccessTo("role", "delete"),
+  hasAccessTo("roles", "delete"),
   rolesController.remove,
 );
 
@@ -298,7 +298,7 @@ router.delete(
 router.post(
   "/:id/assign-permissions",
   authAccess,
-  hasAccessTo("role", "assign"),
+  hasAccessTo("roles", "assign"),
   rolePermsController.assignPermissions,
 );
 
@@ -352,7 +352,7 @@ router.post(
 router.delete(
   "/:id/remove-permissions",
   authAccess,
-  hasAccessTo("role", "unassign"),
+  hasAccessTo("roles", "unassign"),
   rolePermsController.removePermissions,
 );
 
