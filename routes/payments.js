@@ -2,7 +2,7 @@ const router = require("express").Router();
 const paymentController = require("../controllers/payment");
 const { authAccess } = require("../middlewares/authAccess");
 const rateLimiter = require("../middlewares/rateLimit");
-const { hasAccess } = require("../middlewares/authorize");
+const { hasAccessTo } = require("../middlewares/authorize");
 
 const initializePaymentRateLimiter = rateLimiter({
   max: 10, // Limit each IP to 10 payment initialization requests per `time` window
@@ -84,7 +84,7 @@ router.post(
   "/initialize",
   initializePaymentRateLimiter,
   authAccess,
-  hasAccess("payment", "create"),
+  hasAccessTo("payment", "create"),
   paymentController.initPayment,
 );
 
@@ -151,7 +151,7 @@ router.post("/webhook", paymentController.processPaymentWebhooks);
 router.get(
   "/user",
   authAccess,
-  hasAccess("payment", "read"),
+  hasAccessTo("payment", "read"),
   paymentController.userPaymentsHistory,
 );
 
@@ -190,7 +190,7 @@ router.get(
 router.get(
   "/user/:id",
   authAccess,
-  hasAccess("payment", "read"),
+  hasAccessTo("payment", "read"),
   paymentController.getById,
 );
 

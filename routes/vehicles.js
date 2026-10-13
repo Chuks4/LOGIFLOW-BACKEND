@@ -3,6 +3,7 @@ const router = require("express").Router();
 const { validateCreateVehicle } = require("../validators/vehicles");
 const { authAccess } = require("../middlewares/authAccess");
 
+
 /**
  * @swagger
  * /api/v1/vehicles:

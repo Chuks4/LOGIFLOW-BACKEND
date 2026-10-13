@@ -1,7 +1,8 @@
 const router = require("express").Router();
 const shipmentController = require("../controllers/shipments");
-const {authAccess} = require("../middlewares/authAccess");
+const { authAccess } = require("../middlewares/authAccess");
 const { validateCreateShipment } = require("../validators/shipments");
+const { hasAccessTo } = require("../middlewares/authorize");
 
 /**
  * @swagger
@@ -115,7 +116,13 @@ const { validateCreateShipment } = require("../validators/shipments");
  *       500:
  *         description: Internal server error
  */
-router.post("/", authAccess, validateCreateShipment, shipmentController.create);
+router.post(
+  "/",
+  authAccess,
+  hasAccessTo("shipments", "create"),
+  validateCreateShipment,
+  shipmentController.create,
+);
 
 /**
  * @swagger
@@ -163,7 +170,6 @@ router.post("/", authAccess, validateCreateShipment, shipmentController.create);
  *         schema:
  *           type: string
  *           format: uuid
- *           example: "123e4567-e89b-12d3-a456-426614174000"
  *
  *       - in: query
  *         name: driverId
@@ -172,7 +178,6 @@ router.post("/", authAccess, validateCreateShipment, shipmentController.create);
  *         schema:
  *           type: string
  *           format: uuid
- *           example: "123e4567-e89b-12d3-a456-426614174000"
  *
  *       - in: query
  *         name: dispatcherId
@@ -181,7 +186,6 @@ router.post("/", authAccess, validateCreateShipment, shipmentController.create);
  *         schema:
  *           type: string
  *           format: uuid
- *           example: "123e4567-e89b-12d3-a456-426614174000"
  *
  *     responses:
  *       200:
@@ -191,7 +195,12 @@ router.post("/", authAccess, validateCreateShipment, shipmentController.create);
  *       500:
  *         description: Internal server error
  */
-router.get("/", authAccess, shipmentController.getAll);
+router.get(
+  "/",
+  authAccess,
+  hasAccessTo("shipments", "read"),
+  shipmentController.getAll,
+);
 
 /**
  * @swagger
@@ -222,7 +231,12 @@ router.get("/", authAccess, shipmentController.getAll);
  *       500:
  *         description: Internal server error
  */
-router.get("/:id", authAccess, shipmentController.getById);
+router.get(
+  "/:id",
+  authAccess,
+  hasAccessTo("shipments", "read"),
+  shipmentController.getById,
+);
 
 /**
  * @swagger
@@ -242,7 +256,6 @@ router.get("/:id", authAccess, shipmentController.getById);
  *         schema:
  *           type: string
  *           format: uuid
- *           example: "123e4567-e89b-12d3-a456-426614174000"
  *     requestBody:
  *       required: true
  *       content:
@@ -275,7 +288,12 @@ router.get("/:id", authAccess, shipmentController.getById);
  *       500:
  *         description: Internal server error
  */
-router.put("/:id", authAccess, shipmentController.updateStatus);
+router.put(
+  "/:id",
+  authAccess,
+  hasAccessTo("shipments", "update"),
+  shipmentController.updateStatus,
+);
 
 /**
  * @swagger
@@ -319,6 +337,7 @@ router.put("/:id", authAccess, shipmentController.updateStatus);
 router.patch(
   "/:shipmentId/:driverId/assign-driver",
   authAccess,
+  hasAccessTo("shipments", "assign"),
   shipmentController.assignDriver,
 );
 
