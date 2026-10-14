@@ -105,9 +105,10 @@ const swaggerDocs = swaggerJsdocs(swaggerOptions);
 app.use(cors(corsOptions));
 app.use("/api/v1/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
+app.set("trust-proxy", 1);
 app.use(express.json());
 app.use(cookieParser());
-app.use("trust-proxy", 1);
+
 
 // Routes
 app.use("api/v1/uploads", express.static("./uploads"));
